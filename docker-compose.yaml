@@ -1,0 +1,44 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: felixplore-db
+    hostname: felixplore-db
+    restart: always
+    shm_size: 1g
+    environment:
+      POSTGRES_USER: felixplore
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: felixplore
+    ports:
+      - 5432:5432
+    networks:
+      - felixplore
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: felixplore-web
+    environment:
+      PORT: 3000
+      ORIGIN: "https://explore.felixonline.co.uk"
+      POSTGRES_HOST: felixplore-db
+    restart: unless-stopped
+    networks:
+      - felixplore
+      - web  # for exposing to the internet
+    depends_on:
+      - db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.felixplore-frontend.rule=Host(`explore.felixonline.co.uk`)"
+
+volumes:
+  postgres-data:
+
+networks:
+  felixplore:
+  web:
+    external: true
