@@ -12,7 +12,7 @@
 	}
 </script>
 
-<article class="space-y-6 p-2">
+<article class="space-y-6">
 	<header class="flex flex-col space-y-4 sm:flex-row sm:items-start sm:justify-between">
 		<div class="flex-1 space-y-4">
 			{#if article.category}

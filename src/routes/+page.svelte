@@ -5,12 +5,12 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { ARTICLES_PER_PAGE } from '$lib/config';
-	import ArticleCard from '$lib/components/ArticleCard.svelte';
 	import IconArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import IconArrowRight from '@lucide/svelte/icons/arrow-right';
 	import IconEllipsis from '@lucide/svelte/icons/ellipsis';
 	import IconFirst from '@lucide/svelte/icons/chevrons-left';
-	import IconLast from '@lucide/svelte/icons/chevron-right';
+	import IconLast from '@lucide/svelte/icons/chevrons-right';
+	import ArticleResult from '$lib/components/ArticleResult.svelte';
 
 	let { data } = $props();
 
@@ -34,11 +34,10 @@
 	}
 </script>
 
-<div class="container mx-auto space-y-8 p-4 md:p-8">
+<div class="container mx-auto space-y-8 p-4 md:p-8 max-w-5xl">
 	<header class="text-center">
 		<a href="/">
-			<h1 class="h1 text-secondary py-4">Felixplore</h1>
-			<p>Uncover decades of student life, events and societies in the <em>Felix</em> archive.</p>
+			<h1 class="h1 text-secondary-400-600 py-4">Felixplore</h1>
 		</a>
 	</header>
 
@@ -76,10 +75,10 @@
 
 	{#if searchQuery && articles && articles.length > 0}
 		<section class="space-y-6">
-			<p>About {totalArticles} results</p>
+			<p>Found {totalArticles} results</p>
 			<div class="grid grid-cols-1 gap-6">
 				{#each articles as article (article.publication + article.issue_no + article.page_no + article.headline)}
-					<ArticleCard {article} />
+					<ArticleResult {article} />
 				{/each}
 			</div>
 
@@ -92,6 +91,7 @@
 						onPageChange={handlePageChange}
 						pageSize={ARTICLES_PER_PAGE}
 						showFirstLastButtons
+						alternative
 					>
 						{#snippet labelEllipsis()}<IconEllipsis class="size-4" />{/snippet}
 						{#snippet labelNext()}<IconArrowRight class="size-4" />{/snippet}

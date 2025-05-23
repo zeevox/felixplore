@@ -2,8 +2,6 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
-@source '../../node_modules/layerchart/dist';
-
 @import '@fontsource-variable/libre-franklin';
 @import '@fontsource/old-standard-tt';
 @import '@fontsource-variable/crimson-pro';

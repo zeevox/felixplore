@@ -21,7 +21,7 @@ UPDATE articles
 SET category = ''
 WHERE LOWER(category) IN (
   'unspecified', 'uncategorised', 'not specified', 'miscellaneous', 'untitled',
-  'various', '(not specified)', 'none', 'n/a', 'other', 'unknown', 'unk', '--', 'felix'
+  'various', '(not specified)', 'none', 'n/a', 'other', 'unknown', 'unk', '--', 'felix', '""'
 );
 
 UPDATE articles
