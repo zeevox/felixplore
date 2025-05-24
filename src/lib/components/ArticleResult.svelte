@@ -25,7 +25,7 @@
 	<div class="p-5">
 		{#if article.category}
 			<p
-				class="text-primary-500 group-hover:text-primary-600 mb-1 text-xs font-semibold tracking-wide uppercase transition-colors duration-300"
+				class="text-primary-500 h6 group-hover:text-primary-600 mb-1 text-xs font-semibold tracking-wide uppercase transition-colors duration-300"
 			>
 				{article.category}
 			</p>
@@ -39,7 +39,7 @@
 			{displayText}
 		</p>
 		<div class="text-surface-500-500 dark:text-surface-500-500 text-xs">
-			<span>{article.publication} #{article.issue_no}</span>
+			<span><span class="capitalize">{article.publication}</span> #{article.issue_no}</span>
 			<span class="mx-1.5" aria-hidden="true">&bull;</span>
 			<span>{formatDate(article.article_date)}</span>
 		</div>

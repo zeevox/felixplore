@@ -41,11 +41,10 @@
 		"vite": "^6.3.5"
 	},
 	"dependencies": {
-		"@fontsource-variable/crimson-pro": "^5.2.5",
-		"@fontsource-variable/gelasio": "^5.2.5",
 		"@fontsource-variable/libre-franklin": "^5.2.5",
-		"@fontsource-variable/newsreader": "^5.2.7",
-		"@fontsource/old-standard-tt": "^5.2.5",
+		"@fontsource-variable/merriweather": "^5.2.2",
+		"@fontsource/charis-sil": "^5.2.5",
+		"@fontsource/source-serif-pro": "^5.2.5",
 		"chart.js": "^4.4.9",
 		"dayjs": "^1.11.13",
 		"pg": "^8.16.0",

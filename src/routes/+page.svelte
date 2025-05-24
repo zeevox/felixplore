@@ -37,7 +37,7 @@
 <div class="container mx-auto space-y-8 p-4 md:p-8 max-w-5xl">
 	<header class="text-center">
 		<a href="/">
-			<h1 class="h1 text-secondary-400-600 py-4">Felixplore</h1>
+			<h1 class="h1 py-4">Felixplore</h1>
 		</a>
 	</header>
 

@@ -3,10 +3,9 @@
 @plugin '@tailwindcss/typography';
 
 @import '@fontsource-variable/libre-franklin';
-@import '@fontsource/old-standard-tt';
-@import '@fontsource-variable/crimson-pro';
-@import '@fontsource-variable/gelasio';
-@import '@fontsource-variable/newsreader';
+@import '@fontsource-variable/merriweather';
+@import '@fontsource/source-serif-pro';
+@import '@fontsource/charis-sil';
 
 @import '@skeletonlabs/skeleton';
 @import '@skeletonlabs/skeleton/optional/presets';
@@ -15,11 +14,7 @@
 @source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
 
 [data-theme='felixplore'] {
-	--base-font-family: 'Libre Franklin Variable', serif;
+	--base-font-family: 'Merriweather Variable', serif;
 	--heading-font-family: 'Libre Franklin Variable', serif;
-    /* --heading-font-family: 'Newsreader Variable', serif; */
-	/* --heading-font-family: 'Old Standard TT', serif; */
-    /* --heading-font-family: 'Crimson Pro Variable', serif; */
-	/* --heading-font-family: 'Gelasio Variable', sans-serif; */
 	--anchor-font-family: 'inherit';
 }

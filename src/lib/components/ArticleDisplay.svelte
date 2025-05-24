@@ -17,7 +17,7 @@
 		<div class="flex-1 space-y-4">
 			{#if article.category}
 				<div>
-					<span class="uppercase">{article.category}</span>
+					<span class="uppercase h6 text-primary-500">{article.category}</span>
 				</div>
 			{/if}
 
@@ -40,13 +40,13 @@
 			<p class="text-surface-500-400 text-sm">{formatDate(article.article_date)}</p>
 		</div>
 		<a
-			class="btn hover:bg-surface-100-900 ml-4 hidden self-center self-start hover:shadow-md xl:flex"
+			class="btn hover:bg-surface-100-900 ml-4 hidden self-start hover:shadow-md xl:flex"
 			target="_blank"
 			rel="noopener noreferrer"
 			href="https://issues.felixonline.co.uk/{article.publication}_{article.issue_no}.pdf#page={article.page_no}"
-			aria-label="View original article"
+			aria-label="View original"
 		>
-			View original scan
+			View original
 			<SquareArrowOutUpRight size={18} />
 		</a>
 	</header>
@@ -65,7 +65,7 @@
 				rel="noopener noreferrer"
 				href="https://issues.felixonline.co.uk/{article.publication}_{article.issue_no}.pdf#page={article.page_no}"
 			>
-				<em>{article.publication}</em> Issue #{article.issue_no}, page {article.page_no}
+				<em class="capitalize">{article.publication}</em> Issue #{article.issue_no}, page {article.page_no}
 			</a>
 		</span>
 	</footer>

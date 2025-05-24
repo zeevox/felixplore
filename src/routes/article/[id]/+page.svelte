@@ -10,11 +10,11 @@
 <div class="container mx-auto p-4 md:p-8">
 	<header class="text-left">
 		<a href="/">
-			<h3 class="h3 text-secondary-400-600 py-4">Felixplore</h3>
+			<h3 class="h3 py-4">Felixplore</h3>
 		</a>
 		<hr class="opacity-20 mb-8" />
 	</header>
-	<div class="flex flex-col lg:flex-row gap-8">
+	<div class="flex flex-col lg:flex-row gap-16">
 		<main class="lg:w-2/3">
 			{#if data.article}
 				<ArticleDisplay article={data.article} />
