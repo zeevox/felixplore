@@ -21,7 +21,7 @@ export interface Article {
     issue_no: number;
     page_no: number;
     article_date: Date;
-    headline: string;
+    headline?: string | null;
     strapline?: string | null;
     author?: string | null;
     category?: string | null;

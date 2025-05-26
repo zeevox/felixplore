@@ -88,3 +88,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE
 ON articles FOR EACH ROW EXECUTE FUNCTION articles_tsvector_update_trigger();
+
+UPDATE articles SET headline = NULL WHERE TRIM(headline) = '';
+UPDATE articles SET category = NULL WHERE TRIM(category) = '';
+UPDATE articles SET strapline = NULL WHERE TRIM(strapline) = '';

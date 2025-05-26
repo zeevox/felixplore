@@ -1,53 +1,79 @@
 <script lang="ts">
-    import Search from '@lucide/svelte/icons/search';
-    let searchQuery = '';
+	import Search from '@lucide/svelte/icons/search';
+	import Dices from '@lucide/svelte/icons/dices';
+
+	let searchQuery = $state('');
 </script>
 
-<div class="container mx-auto flex h-full flex-col items-center justify-center p-4 text-center">
-    <header class="mb-10">
-        <a href="/">
-            <h1 class="text-6xl font-bold text-primary-500 md:text-7xl">Felixplore</h1>
-        </a>
-    </header>
+<div
+	class="container mx-auto flex min-h-dvh flex-col items-center justify-center p-4 text-center transition-colors duration-500 ease-in-out"
+>
+	<header class="mb-10">
+		<a href="/" class="group">
+			<h1
+				class="text-secondary-500 dark:text-secondary-50
+				p-4
+				 text-5xl font-extrabold tracking-tight transition-opacity
+				duration-300 group-hover:opacity-80 md:text-7xl"
+			>
+				Felixplore
+			</h1>
+		</a>
+	</header>
 
-    <div class="w-full max-w-xl">
-        <form action="/search" method="GET" class="mb-6">
-            <label class="label w-full">
-                <span class="label-text sr-only">Search the archive</span>
-                <div
-                    class="input-group preset-filled-surface-50-950 focus-within:ring-primary-500 grid-cols-[1fr_auto] rounded-full shadow-lg transition-shadow duration-200 ease-in-out focus-within:shadow-xl focus-within:ring-2 hover:shadow-xl"
-                >
-                    <input
-                        type="search"
-                        name="query"
-                        bind:value={searchQuery}
-                        class="ig-input resize-none overflow-hidden border-none bg-transparent py-3.5 pl-6 pr-3 text-base leading-tight focus:ring-0 md:text-lg"
-                        placeholder="Search for events, people, topics..."
-                        style="min-height: 3rem;"
-                    />
-                    <div class="ig-cell flex items-center justify-center pr-3">
-                        <button
-                            type="submit"
-                            title="Search"
-                            class="btn-icon preset-tonal-primary hover:preset-filled-primary text-primary-500 rounded-full p-2 md:p-2.5"
-                        >
-                            <Search size={22} />
-                        </button>
-                    </div>
-                </div>
-            </label>
-        </form>
+	<div class="w-full max-w-2xl">
+		<form action="/search" method="GET" class="mb-8">
+			<label class="label w-full">
+				<span class="sr-only">Search the archive</span>
+				<div
+					class="input-group focus-within:ring-primary-500/70 transform
+                           grid-cols-[1fr_auto] rounded-full bg-white/70
+                           p-2 shadow-md backdrop-blur-lg
+                           transition-all duration-300
+                           ease-out focus-within:scale-[1.02] focus-within:ring-2
+                           hover:scale-[1.02] hover:shadow-2xl dark:bg-black/50"
+				>
+					<input
+						type="search"
+						name="query"
+						bind:value={searchQuery}
+						class="ig-input text-surface-900 dark:text-surface-100 placeholder:text-surface-500 dark:placeholder:text-surface-400
+                               resize-none truncate overflow-hidden border-none bg-transparent
+                                px-3 text-base leading-tight
+                               placeholder:truncate focus:ring-0 md:text-lg"
+						placeholder="Search for events, people, societies..."
+						style="min-height: 2.5rem;"
+					/>
+					<div class="ig-cell flex items-center justify-center px-2">
+						<button
+							type="submit"
+							title="Search"
+							class="btn-icon preset-filled-primary transform rounded-full
+                                   transition-transform duration-200 ease-out
+                                   active:scale-100"
+						>
+							<Search size={24} class="transition-transform duration-200" />
+						</button>
+					</div>
+				</div>
+			</label>
+		</form>
 
-    </div>
+		<div class="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+			<a
+				href="/random"
+				class="btn preset-outlined-secondary-800-200
+                       hover:shadow-secondary-500/30 w-auto
+                       transform rounded-full
+                       border-2 py-3
+                       text-base font-semibold
+                       shadow-lg transition-all duration-200 ease-out hover:scale-102 active:scale-96
+                       sm:px-10"
+				aria-label="Find a random article"
+			>
+				<Dices class="mr-2 inline-block" size={20} />
+				I'm Feeling Lucky
+			</a>
+		</div>
+	</div>
 </div>
-
-<style>
-    /* Optional: Ensure full height for vertical centering if not already handled by a layout */
-    :global(body), :global(html) {
-        height: 100%;
-    }
-    /* Ensure the direct parent of this page can also take full height if needed */
-    :global(#svelte-announcer + div) {
-         height: 100%;
-    }
-</style>

@@ -35,8 +35,8 @@
 
 <div class="flex h-full flex-col">
     <header class="sticky top-0 z-10 border-b border-surface-200-800 bg-surface-50-950/80 p-4 backdrop-blur-sm">
-        <div class="container mx-auto flex max-w-5xl items-center gap-4">
-            <a href="/" class="text-xl font-semibold md:text-2xl">Felixplore</a>
+        <div class="container mx-auto flex max-w-5xl flex-col gap-2 items-stretch md:flex-row md:items-center md:gap-4 px-4 md:px-8">
+            <a href="/" class="text-xl font-semibold md:text-2xl md:mr-4 self-center">Felixplore</a>
             <form method="POST" use:enhance class="flex-grow">
                 <label class="label w-full">
                     <span class="label-text sr-only">Search the archive</span>
@@ -75,7 +75,7 @@
     <main class="container mx-auto flex-grow space-y-8 p-4 md:p-8 max-w-5xl">
         {#if searchQuery && articles && articles.length > 0}
             <section class="space-y-6">
-                <p class="text-sm text-surface-600-300">Found {totalArticles} results for "{searchQuery}"</p>
+                <p class="text-sm text-surface-600-300">Found {totalArticles} results</p>
                 <div class="grid grid-cols-1 gap-6">
                     {#each articles as article (article.publication + article.issue_no + article.page_no + article.headline)}
                         <ArticleResult {article} />
