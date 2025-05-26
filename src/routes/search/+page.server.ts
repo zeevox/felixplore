@@ -1,4 +1,4 @@
-// src/routes/+page.server.ts
+// src/routes/search/+page.server.ts
 import db from '$lib/server/db';
 import type { Article } from '$lib/types/article';
 import { fail, redirect } from '@sveltejs/kit';
@@ -58,7 +58,7 @@ export const load: PageServerLoad = async ({ url }) => {
             totalPages = Math.ceil(totalArticles / ARTICLES_PER_PAGE);
 
             if (currentPage > totalPages && totalPages > 0) {
-                redirect(307, `/?query=${encodeURIComponent(searchQuery)}&page=${totalPages}`);
+                redirect(307, `/search?query=${encodeURIComponent(searchQuery)}&page=${totalPages}`);
             }
 
         } catch (err: any) {
@@ -84,6 +84,6 @@ export const actions: Actions = {
         if (!query || query.trim() === '') {
             redirect(303, `/`);
         }
-        redirect(303, `/?query=${encodeURIComponent(query)}&page=1`);
+        redirect(303, `/search?query=${encodeURIComponent(query)}&page=1`);
     },
 };
