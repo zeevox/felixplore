@@ -5,7 +5,7 @@ import db from '$lib/server/db';
 
 export const load: PageServerLoad = async () => {
     const result = await db.query(
-        "SELECT id FROM articles WHERE headline IS NOT NULL AND LENGTH(txt) > 500 AND article_date < NOW() - INTERVAL '10 years' ORDER BY random() LIMIT 1"
+        "SELECT id FROM articles WHERE headline IS NOT NULL AND LENGTH(txt) > 1000 AND article_date < NOW() - INTERVAL '10 years' ORDER BY random() LIMIT 1"
     );
 
     if (result.rows.length === 0 || !result.rows[0]?.id) {
