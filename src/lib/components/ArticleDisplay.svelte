@@ -31,7 +31,7 @@
 
 			{#if article.author}
 				<p class="text-md text-surface-600-300">
-					By <a class="font-semibold" href="/?query={encodeURIComponent(article.author)}">
+					By <a class="font-semibold" href="/search?query={encodeURIComponent(article.author)}">
 						{article.author}
 					</a>
 				</p>
@@ -51,7 +51,7 @@
 		</a>
 	</header>
 
-	<section class="prose-lg max-w-none space-y-4 opacity-95">
+	<section class="prose-lg max-w-none space-y-4 opacity-95 dark:opacity-100">
 		{#each article.txt.split('\n\n') as paragraph}
 			<p>{paragraph}</p>
 		{/each}

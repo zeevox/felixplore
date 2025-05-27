@@ -1,3 +1,4 @@
+<!-- src/routes/search/+page.svelte -->
 <script lang="ts">
     import Search from '@lucide/svelte/icons/search';
     import { Pagination } from '@skeletonlabs/skeleton-svelte';
@@ -73,11 +74,11 @@
     </header>
 
     <main class="container mx-auto flex-grow space-y-8 p-4 md:p-8 max-w-5xl">
-        {#if searchQuery && articles && articles.length > 0}
+        {#if articles && articles.length > 0}
             <section class="space-y-6">
                 <p class="text-sm text-surface-600-300">Found {totalArticles} results</p>
                 <div class="grid grid-cols-1 gap-6">
-                    {#each articles as article (article.publication + article.issue_no + article.page_no + article.headline)}
+                    {#each articles as article (article.id)}
                         <ArticleResult {article} />
                     {/each}
                 </div>
