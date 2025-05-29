@@ -23,10 +23,10 @@
 				labels: labels,
 				datasets: [
 					{
-						label: 'avg(ts_rank)',
+						label: 'Prevalence',
 						data: popularities,
 						fill: false,
-						tension: 0.1
+						tension: 0.1,
 					}
 				]
 			},
@@ -35,10 +35,9 @@
 				maintainAspectRatio: false,
 				scales: {
 					y: {
-						beginAtZero: true,
 						title: {
 							display: true,
-							text: 'Average normalised article rank'
+							text: 'Prevalence'
 						}
 					},
 					x: {
@@ -54,7 +53,20 @@
 					},
 					tooltip: {
 						mode: 'index',
-						intersect: false
+						intersect: false,
+						callbacks: {
+							label: function (context) {
+								let label = context.dataset.label || '';
+								if (label) {
+									label += ': ';
+								}
+								if (context.parsed.y !== null) {
+									// Format to a reasonable number of decimal places
+									label += context.parsed.y.toFixed(4);
+								}
+								return label;
+							}
+						}
 					}
 				}
 			}
@@ -79,20 +91,30 @@
 
 <div class="container mx-auto p-4">
 	{#if data.query}
-		<h1 class="h1 mb-4">Trend for <span class="text-secondary-400-600">{data.query}</span></h1>
+		<h1 class="h1 mb-4">
+			Trend for <span class="text-primary-500 font-semibold">{data.query}</span>
+		</h1>
 	{/if}
 
 	{#if data.error}
-		<div class="alert variant-filled-error">
+		<div class="alert variant-filled-error rounded-md p-4">
+			<h4 class="font-bold">Error</h4>
 			<p>{data.error}</p>
 		</div>
 	{:else if data.trendData && data.trendData.length > 0}
-		<div class="card p-4" style="height: 500px;">
+		<div class="card rounded-md p-4 shadow-lg" style="height: 500px;">
 			<canvas bind:this={chartCanvas}></canvas>
 		</div>
-	{:else if data.query && !data.trendData?.length}
-		<div class="alert variant-filled-warning">
-			<p>No data found for the query "{data.query}".</p>
+	{:else if data.query && (!data.trendData || data.trendData.length === 0)}
+		<div class="alert variant-filled-warning rounded-md p-4">
+			<p>
+				No data found for the query "{data.query}". The concept might not be prevalent in
+				the archive or the embedding model could not find strong matches.
+			</p>
 		</div>
-	{:else if !data.query && !data.error}{/if}
+	{:else if !data.query && !data.error}
+		<div class="p-8 text-center">
+			<p class="text-gray-500">Enter a query to see its trend over time.</p>
+		</div>
+	{/if}
 </div>

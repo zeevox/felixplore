@@ -45,6 +45,7 @@
 		"@fontsource-variable/merriweather": "^5.2.2",
 		"@fontsource/charis-sil": "^5.2.5",
 		"@fontsource/source-serif-pro": "^5.2.5",
+		"@google/genai": "^1.2.0",
 		"chart.js": "^4.4.9",
 		"dayjs": "^1.11.13",
 		"pg": "^8.16.0",
