@@ -8,7 +8,7 @@
     import ServerCrash from "@lucide/svelte/icons/server-crash";
     import AlertTriangle from "@lucide/svelte/icons/alert-triangle";
     import { page } from "$app/state";
-    import type { Article } from "$lib/types/article"; // Assuming Article type is here
+    import type { Article } from "$lib/types/article";
 
     // data can be undefined if load fails very early before returning its structure
     let { data } = $props<{
@@ -16,8 +16,8 @@
         searchQuery?: string;
         currentPage?: number;
         sortOrder?: string; // Should match SortOrder enum values from server
-        startYear?: string; // YYYY or empty
-        endYear?: string; // YYYY or empty
+        startYear?: string;
+        endYear?: string;
     }>();
 
     const pageError = $derived(page.error);
@@ -111,31 +111,35 @@
                 <label class="w-full">
                     <span class="sr-only">Search the archive</span>
                     <div
-                        class="input-group preset-filled-surface-200-800 focus-within:ring-primary-500 grid grid-cols-[auto_1fr_auto] rounded-full shadow-sm transition-all duration-200 ease-in-out focus-within:shadow-lg focus-within:ring-2 hover:shadow-md"
+                        class="input-group transform rounded-full bg-white/70 dark:bg-black/50
+                               backdrop-blur-lg p-2 shadow-md hover:shadow-lg
+                               focus-within:ring-2 focus-within:ring-primary-500/70
+                               grid grid-cols-[1fr_auto] transition-all duration-300 ease-out"
                     >
-                        <div
-                            class="text-surface-500-400 flex items-center justify-center pr-1 pl-3 md:pl-4"
-                        >
-                            <Search size={18} />
-                        </div>
                         <input
                             type="search"
                             name="searchQuery"
-                            class="ig-input placeholder:text-surface-400-600 w-full resize-none overflow-hidden border-none bg-transparent py-2.5 text-sm leading-tight focus:ring-0 md:text-base"
+                            bind:value={currentSearchQuery}
+                            class="ig-input text-surface-900 dark:text-surface-100
+                                   placeholder:text-surface-500 dark:placeholder:text-surface-400
+                                   resize-none truncate overflow-hidden border-none bg-transparent
+                                   px-3 text-sm leading-tight
+                                   focus:ring-0 md:text-base"
                             placeholder="Search the archive..."
-                            value={currentSearchQuery}
                             style="min-height: 2.25rem;"
                             aria-label="Search the archive"
                         />
                         {#if currentSearchQuery}
-                            <div class="flex items-center justify-center pr-2 pl-1">
+                            <div class="ig-cell flex items-center justify-center px-2">
                                 <button
                                     type="submit"
                                     title="Search"
                                     aria-label="Submit search"
-                                    class="btn-icon preset-tonal-primary hover:preset-filled-primary focus:preset-filled-primary text-primary-500 rounded-full p-1.5 transition-colors"
+                                    class="btn-icon preset-filled-primary transform rounded-full
+                                           transition-transform duration-200 ease-out
+                                           active:scale-100"
                                 >
-                                    <Search size={18} />
+                                    <Search size={18} class="transition-transform duration-200" />
                                 </button>
                             </div>
                         {/if}
