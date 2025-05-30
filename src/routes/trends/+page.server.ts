@@ -1,14 +1,14 @@
-// src/routes/trends/+page.server.ts
-import db from '$lib/server/db';
-import type { PageServerLoad } from './$types';
-import { getQueryEmbedding } from '$lib/server/embed';
+import db from "$lib/server/db";
+import type { PageServerLoad, Actions } from "./$types";
+import { getQueryEmbedding } from "$lib/server/embed";
+import { redirect } from "@sveltejs/kit";
 
 // Default similarity threshold (tau). Determined empirically.
 const DEFAULT_TAU = 0.64;
 
 export const load: PageServerLoad = async ({ url }) => {
-    const query = url.searchParams.get('q');
-    const tauParam = url.searchParams.get('tau');
+    const queryParam = url.searchParams.get("query"); // Changed from 'q'
+    const tauParam = url.searchParams.get("tau");
 
     let tau = DEFAULT_TAU;
     if (tauParam) {
@@ -20,31 +20,26 @@ export const load: PageServerLoad = async ({ url }) => {
         }
     }
 
-    if (!query) {
+    if (!queryParam) {
         return {
             query: null,
             trendData: null,
-            error: 'No search query provided.',
+            error: null, // No error, just means no query to process
             currentTau: tau
         };
     }
 
     try {
-        // 1. Embed the search query using the new function
-        const queryEmbedding = await getQueryEmbedding(query);
+        const queryEmbedding = await getQueryEmbedding(queryParam);
 
         if (!queryEmbedding) {
             return {
-                query,
+                query: queryParam,
                 trendData: null,
-                error: 'Failed to generate embedding for the query. Check server logs for details. Ensure Google GenAI SDK is configured.',
+                error: "Failed to generate embedding for the query. Check server logs for details. Ensure Google GenAI SDK is configured.",
                 currentTau: tau
             };
         }
-
-        // Ensure the query embedding is L2 normalized if your stored embeddings are,
-        // or adjust similarity calculation. Assuming pgvector's <=> operator expects L2 normalized vectors
-        // for cosine distance. Gemini embeddings are typically L2 normalized.
 
         const sqlQuery = `
             WITH all_years AS (
@@ -63,8 +58,6 @@ export const load: PageServerLoad = async ({ url }) => {
                     EXTRACT(YEAR FROM article_date)::integer AS year,
                     COUNT(*) AS relevant_articles
                 FROM articles
-                -- Calculate cosine similarity: 1 - (cosine_distance)
-                -- $1::vector is the query embedding, $2::double precision is the threshold (tau)
                 WHERE (1 - (gemini_embedding_001 <=> $1::vector)) > $2::double precision
                 GROUP BY EXTRACT(YEAR FROM article_date)::integer
             )
@@ -74,33 +67,56 @@ export const load: PageServerLoad = async ({ url }) => {
             FROM all_years ay
             LEFT JOIN article_counts_per_year acpy ON ay.year = acpy.year
             LEFT JOIN relevant_articles_per_year rpy ON ay.year = rpy.year
-            WHERE acpy.total_articles > 0 -- Avoid division by zero for years with no articles
+            WHERE acpy.total_articles > 0
             ORDER BY ay.year ASC;
         `;
 
         const result = await db.query(sqlQuery, [JSON.stringify(queryEmbedding), tau]);
 
-        const trendData = result.rows.map(row => ({
+        const trendData = result.rows.map((row) => ({
             year: parseInt(row.year, 10),
             popularity: parseFloat(row.normalized_prevalence)
         }));
 
         return {
-            query,
+            query: queryParam,
             trendData,
+            error: null,
             currentTau: tau
         };
     } catch (e: any) {
-        console.error('Error fetching trend data:', e);
-        let errorMessage = `Failed to fetch trend data: ${e.message || 'Unknown error'}`;
+        console.error("Error fetching trend data:", e);
+        let errorMessage = `Failed to fetch trend data: ${e.message || "Unknown error"}`;
         if (e.cause && e.cause.message) {
             errorMessage += ` Details: ${e.cause.message}`;
         }
         return {
-            query,
+            query: queryParam,
             trendData: null,
             error: errorMessage,
             currentTau: tau
         };
+    }
+};
+
+export const actions: Actions = {
+    default: async ({ request }) => {
+        const data = await request.formData();
+        const query = ((data.get("query") as string) || "").trim();
+        const tau = data.get("tau") as string | null; // tau from hidden input
+
+        const params = new URLSearchParams();
+
+        if (query) {
+            params.set("query", query);
+        }
+
+        if (tau) {
+            // If tau was in the form, preserve it
+            params.set("tau", tau);
+        }
+
+        const redirectPath = `/trends${params.size > 0 ? `?${params.toString()}` : ""}`;
+        redirect(303, redirectPath);
     }
 };
