@@ -144,7 +144,7 @@
     {/if}
 </svelte:head>
 
-<div class="bg-surface-50-950 text-surface-900-50 flex min-h-screen flex-col">
+<div class="flex min-h-screen flex-col">
     <header
         class="border-surface-200-800 bg-surface-100-900/80 sticky top-0 z-10 border-b p-4 backdrop-blur-sm"
     >
@@ -199,11 +199,12 @@
         </div>
     </header>
 
-    <main class="container mx-auto flex-grow space-y-8 p-4 md:p-8">
+    <main class="lg:card lg:preset-filled-surface-50-950 lg:p-10 lg:shadow-sm my-6 container mx-auto flex-grow space-y-8 p-4 md:p-8">
         {#if data.query && !data.error}
             <h1 class="h1 mb-2 text-2xl md:text-3xl">
                 Trend for <span class="text-primary-500 font-semibold">{data.query}</span>
             </h1>
+            <p>Click on the bars in the bar chart to see the articles behind them!</p>
         {/if}
 
         {#if data.error}
@@ -212,7 +213,7 @@
                 <p>{data.error}</p>
             </div>
         {:else if data.trendData && data.trendData.length > 0 && data.query}
-            <div class="card rounded-md p-4 shadow-lg" style="height: 500px;">
+            <div class="p-4" style="height: 500px;">
                 <canvas bind:this={chartCanvas}></canvas>
             </div>
         {:else if data.query && (!data.trendData || data.trendData.length === 0)}

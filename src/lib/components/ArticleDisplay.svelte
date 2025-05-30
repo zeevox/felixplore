@@ -12,7 +12,7 @@
 	}
 </script>
 
-<article class="space-y-6">
+<article class="lg:card lg:preset-filled-surface-50-950 lg:p-10 lg:shadow-sm space-y-6">
 	<header class="flex flex-col space-y-4 sm:flex-row sm:items-start sm:justify-between">
 		<div class="flex-1 space-y-4">
 			{#if article.category}

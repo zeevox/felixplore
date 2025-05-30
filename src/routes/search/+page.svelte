@@ -9,6 +9,7 @@
     import AlertTriangle from "@lucide/svelte/icons/alert-triangle";
     import { page } from "$app/state";
     import type { Article } from "$lib/types/article";
+    import SquareArrowOutUpRight from "@lucide/svelte/icons/square-arrow-out-up-right";
 
     // data can be undefined if load fails very early before returning its structure
     let { data } = $props<{
@@ -92,9 +93,9 @@
     {/if}
 </svelte:head>
 
-<div class="bg-surface-50-950 text-surface-900-50 flex min-h-screen flex-col">
+<div class="flex min-h-screen flex-col">
     <header
-        class="border-surface-200-800 bg-surface-100-900/80 sticky top-0 z-10 border-b p-4 backdrop-blur-sm"
+        class="shadow-xs border-surface-200-800 bg-surface-100-900/80 sticky top-0 z-10 border-b p-4 backdrop-blur-sm"
     >
         <div
             class="container mx-auto flex max-w-5xl flex-col items-stretch gap-2 px-4 md:flex-row md:items-center md:gap-4 md:px-8"
@@ -173,12 +174,13 @@
             </div>
         {:else if data?.searchQuery || currentSearchQuery}
             <div
-                class="border-surface-200-800 flex flex-col items-center justify-between gap-4 border-b pb-4 md:flex-row md:flex-wrap"
+                class="border-surface-200-800 flex flex-col items-center justify-between gap-2 border-b pb-4 md:flex-row md:flex-wrap"
             >
                 <div class="flex items-center gap-2">
                     <label
                         for="sort-order-select"
                         class="text-surface-800-200 text-sm whitespace-nowrap"
+                        hidden
                     >
                         Sort&nbsp;by:
                     </label>
@@ -199,7 +201,7 @@
                         for="start-year-select"
                         class="text-surface-800-200 text-sm whitespace-nowrap"
                     >
-                        From&nbsp;year:
+                        From:
                     </label>
                     <select
                         id="start-year-select"
@@ -208,7 +210,7 @@
                         class="select select-sm preset-filled-surface-200-800 focus:ring-primary-500 border-surface-300-700 hover:border-primary-500/50 rounded-md py-1.5 shadow-sm transition-colors"
                         aria-label="Start year for search filter"
                     >
-                        <option value="">Any Year</option>
+                        <option value="">All time</option>
                         {#each startYearOptions as year}
                             {#if year}
                                 <option value={year}>{year}</option>
@@ -221,7 +223,7 @@
                         for="end-year-select"
                         class="text-surface-800-200 text-sm whitespace-nowrap"
                     >
-                        To&nbsp;year:
+                        To:
                     </label>
                     <select
                         id="end-year-select"
@@ -230,13 +232,23 @@
                         class="select select-sm preset-filled-surface-200-800 focus:ring-primary-500 border-surface-300-700 hover:border-primary-500/50 rounded-md py-1.5 shadow-sm transition-colors"
                         aria-label="End year for search filter"
                     >
-                        <option value="">Any Year</option>
+                        <option value="">All time</option>
                         {#each endYearOptions as year}
                             {#if year}
                                 <option value={year}>{year}</option>
                             {/if}
                         {/each}
                     </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a
+                        href="/trends?query={encodeURIComponent(currentSearchQuery)}"
+                        class="btn hover:bg-surface-100-900 ml-4 self-start hover:shadow-md flex whitespace-nowrap"
+                        aria-label="View trends for current search query"
+                    >
+                        View trends
+                        <SquareArrowOutUpRight size={18} />
+                    </a>
                 </div>
             </div>
 

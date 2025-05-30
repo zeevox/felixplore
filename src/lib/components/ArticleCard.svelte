@@ -20,7 +20,7 @@
 
 <a
 	href={`/article/${article.id}`}
-	class="card group preset-outlined-tertiary-100-900 focus-visible:outline-primary-500 focus-visible:ring-primary-500 block overflow-hidden rounded-lg transition-all duration-300 ease-in-out hover:shadow-lg focus-visible:ring-2"
+	class="card group preset-filled-surface-50-950 shadow-sm focus-visible:outline-primary-500 focus-visible:ring-primary-500 block overflow-hidden rounded-lg transition-all duration-300 ease-in-out hover:shadow-lg focus-visible:ring-2"
 >
 	<div class="p-5">
 		{#if article.category}
