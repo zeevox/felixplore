@@ -1,9 +1,14 @@
 // src/lib/server/embed.ts
 import { GoogleGenAI } from '@google/genai';
-import { GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION } from '$env/static/private';
+import { env } from "$env/dynamic/private";
 import db from './db';
 import pgvector from 'pgvector/pg';
 
+// Default similarity threshold (tau). Determined empirically.
+export const SIMILARITY_THRESHOLD = 0.65;
+
+const GOOGLE_CLOUD_PROJECT = env.GOOGLE_CLOUD_PROJECT;
+const GOOGLE_CLOUD_LOCATION = env.GOOGLE_CLOUD_LOCATION;
 let genAI: GoogleGenAI | null = null;
 
 if (GOOGLE_CLOUD_PROJECT && GOOGLE_CLOUD_LOCATION) {
@@ -17,8 +22,6 @@ if (GOOGLE_CLOUD_PROJECT && GOOGLE_CLOUD_LOCATION) {
         console.error('Failed to initialize GoogleGenAI SDK:', error);
         // genAI will remain null, and getQueryEmbedding will handle this
     }
-} else {
-    console.warn('GOOGLE_CLOUD_PROJECT or GOOGLE_CLOUD_LOCATION not set. Embedding functionality will be disabled.');
 }
 
 /*

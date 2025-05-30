@@ -25,6 +25,11 @@ services:
       PORT: 3000
       ORIGIN: "https://explore.felixonline.co.uk"
       POSTGRES_HOST: felixplore-db
+      GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT}
+      GOOGLE_CLOUD_LOCATION: ${GOOGLE_CLOUD_LOCATION}
+      GOOGLE_APPLICATION_CREDENTIALS: /app/secure/gcp-credentials.json
+    volumes:
+      - ./gcp-credentials.json:/app/secure/gcp-credentials.json:ro
     restart: unless-stopped
     networks:
       - felixplore

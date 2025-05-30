@@ -2,7 +2,7 @@
     import { Chart, registerables } from "chart.js";
     import { onDestroy } from "svelte";
     import { enhance } from "$app/forms";
-    import { goto } from "$app/navigation"; // Import goto
+    import { goto } from "$app/navigation";
     import Search from "@lucide/svelte/icons/search";
 
     Chart.register(...registerables);
@@ -11,11 +11,9 @@
         query: string | null;
         trendData: { year: number; popularity: number }[] | null;
         error: string | null;
-        currentTau: number;
     }>();
 
     let formQuery = $state(data.query ?? "");
-    let formTau = $state(data.currentTau.toString());
 
     let chartCanvas = $state<HTMLCanvasElement>();
     let chartInstance: Chart | null = null;
@@ -29,15 +27,12 @@
         const labels = chartData.map((d) => d.year.toString());
         const popularities = chartData.map((d) => d.popularity);
 
-        // Attempt to get the primary color from CSS variables for modern theming
-        // Fallback to a default vibrant color if CSS variable is not found or in a non-browser environment
-
         const primaryColor = getComputedStyle(document.documentElement)
             .getPropertyValue("--color-secondary-400")
             .trim();
 
         chartInstance = new Chart(chartCanvas, {
-            type: "bar", // Changed from "line" to "bar"
+            type: "bar",
             data: {
                 labels: labels,
                 datasets: [
@@ -58,7 +53,7 @@
                     if (elements.length > 0 && data.query) {
                         const chartElement = elements[0];
                         const index = chartElement.index;
-                        const year = labels[index]; // Year is a string here
+                        const year = labels[index];
 
                         const searchParams = new URLSearchParams();
                         searchParams.set("query", data.query);
@@ -117,7 +112,6 @@
 
     $effect(() => {
         formQuery = data.query ?? "";
-        formTau = data.currentTau.toString();
     });
 
     $effect(() => {
@@ -163,7 +157,6 @@
                 >Felixplore</a
             >
             <form method="POST" use:enhance class="flex-grow">
-                <input type="hidden" name="tau" bind:value={formTau} />
                 <label class="w-full">
                     <span class="sr-only">Analyse trend for a term</span>
                     <div
@@ -242,10 +235,5 @@
             </div>
         {/if}
 
-        {#if data.query && !data.error}
-            <div class="text-surface-500-400 mt-4 text-center text-xs">
-                Using similarity threshold of {data.currentTau.toFixed(2)}
-            </div>
-        {/if}
-    </main>
+        </main>
 </div>

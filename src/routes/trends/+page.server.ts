@@ -1,32 +1,17 @@
 // src/routes/trends/+page.server.ts
 import db from "$lib/server/db";
 import type { PageServerLoad, Actions } from "./$types";
-import { getQueryEmbedding } from "$lib/server/embed";
+import { getQueryEmbedding, SIMILARITY_THRESHOLD } from "$lib/server/embed";
 import { redirect } from "@sveltejs/kit";
 
-// Default similarity threshold (tau). Determined empirically.
-const DEFAULT_TAU = 0.64;
-
 export const load: PageServerLoad = async ({ url }) => {
-    const queryParam = url.searchParams.get("query"); // Changed from 'q'
-    const tauParam = url.searchParams.get("tau");
-
-    let tau = DEFAULT_TAU;
-    if (tauParam) {
-        const parsedTau = parseFloat(tauParam);
-        if (!isNaN(parsedTau) && parsedTau >= -1 && parsedTau <= 1) {
-            tau = parsedTau;
-        } else {
-            console.warn(`Invalid tau parameter: ${tauParam}. Using default ${DEFAULT_TAU}.`);
-        }
-    }
+    const queryParam = url.searchParams.get("query");
 
     if (!queryParam) {
         return {
             query: null,
             trendData: null,
-            error: null, // No error, just means no query to process
-            currentTau: tau
+            error: null // No error, just means no query to process
         };
     }
 
@@ -37,15 +22,16 @@ export const load: PageServerLoad = async ({ url }) => {
             return {
                 query: queryParam,
                 trendData: null,
-                error: "Failed to generate embedding for the query. Check server logs for details. Ensure Google GenAI SDK is configured.",
-                currentTau: tau
+                error: "Failed to generate embedding for the query. Check server logs for details. Ensure Google GenAI SDK is configured."
             };
         }
 
         const sqlQuery = `
             WITH all_years AS (
-                SELECT DISTINCT EXTRACT(YEAR FROM article_date)::integer AS year
+                SELECT EXTRACT(YEAR FROM article_date)::integer AS year, COUNT(*)
                 FROM articles
+                GROUP BY year
+                HAVING COUNT(*) > 300
             ),
             article_counts_per_year AS (
                 SELECT
@@ -72,7 +58,7 @@ export const load: PageServerLoad = async ({ url }) => {
             ORDER BY ay.year ASC;
         `;
 
-        const result = await db.query(sqlQuery, [JSON.stringify(queryEmbedding), tau]);
+        const result = await db.query(sqlQuery, [JSON.stringify(queryEmbedding), SIMILARITY_THRESHOLD]);
 
         const trendData = result.rows.map((row) => ({
             year: parseInt(row.year, 10),
@@ -82,8 +68,7 @@ export const load: PageServerLoad = async ({ url }) => {
         return {
             query: queryParam,
             trendData,
-            error: null,
-            currentTau: tau
+            error: null
         };
     } catch (e: any) {
         console.error("Error fetching trend data:", e);
@@ -94,8 +79,7 @@ export const load: PageServerLoad = async ({ url }) => {
         return {
             query: queryParam,
             trendData: null,
-            error: errorMessage,
-            currentTau: tau
+            error: errorMessage
         };
     }
 };
@@ -104,17 +88,11 @@ export const actions: Actions = {
     default: async ({ request }) => {
         const data = await request.formData();
         const query = ((data.get("query") as string) || "").trim();
-        const tau = data.get("tau") as string | null; // tau from hidden input
 
         const params = new URLSearchParams();
 
         if (query) {
             params.set("query", query);
-        }
-
-        if (tau) {
-            // If tau was in the form, preserve it
-            params.set("tau", tau);
         }
 
         const redirectPath = `/trends${params.size > 0 ? `?${params.toString()}` : ""}`;

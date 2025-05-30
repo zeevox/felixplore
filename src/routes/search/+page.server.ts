@@ -3,7 +3,6 @@ import type { Article } from "$lib/types/article";
 import { error as SvelteKitError, redirect, isRedirect } from "@sveltejs/kit";
 import type { PageServerLoad, Actions } from "./$types";
 import { ARTICLES_PER_PAGE } from "$lib/config";
-import { getQueryEmbedding } from "$lib/server/embed";
 import { searchArticles, SortOrder } from "$lib/server/search";
 
 const MIN_YEAR = 1949;
@@ -78,7 +77,6 @@ export const load: PageServerLoad<SearchPageData> = async ({ url, depends }) => 
                 currentPage,
                 sortOrder: currentSortOrder,
                 articlesPerPage: ARTICLES_PER_PAGE,
-                getQueryEmbeddingFn: getQueryEmbedding,
                 startDate: startDateISO,
                 endDate: endDateISO
             });
