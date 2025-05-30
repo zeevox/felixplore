@@ -28,7 +28,7 @@
     let serverSortOrder = $derived(data?.sortOrder ?? (page.url.searchParams.get('sort') || 'rrf'));
 
     const sortOptions = [
-        { value: 'rrf', label: 'Relevance' },
+        { value: 'rrf', label: 'All results' },
         { value: 'keyword', label: 'Exact match' },
         { value: 'vector', label: 'Same concept' },
     ];
@@ -135,8 +135,9 @@
                 class="border-surface-200-800 flex flex-col items-center justify-between gap-4 border-b pb-4 md:flex-row"
             >
                 <div class="flex items-center gap-2">
-                    <label for="sort-order-select" class="text-surface-800-200 text-sm"
-                        >Sort&nbsp;by:</label
+                    <label for="sort-order-select" class="text-surface-800-200 text-sm" hidden>
+                        Sort&nbsp;by
+                    </label
                     >
                     <select
                         id="sort-order-select"
