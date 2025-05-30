@@ -2,6 +2,7 @@
     import { Chart, registerables } from "chart.js";
     import { onDestroy } from "svelte";
     import { enhance } from "$app/forms";
+    import { goto } from "$app/navigation"; // Import goto
     import Search from "@lucide/svelte/icons/search";
 
     Chart.register(...registerables);
@@ -13,7 +14,6 @@
         currentTau: number;
     }>();
 
-    // Local state for form inputs, initialized from props
     let formQuery = $state(data.query ?? "");
     let formTau = $state(data.currentTau.toString());
 
@@ -29,36 +29,58 @@
         const labels = chartData.map((d) => d.year.toString());
         const popularities = chartData.map((d) => d.popularity);
 
+        // Attempt to get the primary color from CSS variables for modern theming
+        // Fallback to a default vibrant color if CSS variable is not found or in a non-browser environment
+
+        const primaryColor = getComputedStyle(document.documentElement)
+            .getPropertyValue("--color-secondary-400")
+            .trim();
+
         chartInstance = new Chart(chartCanvas, {
-            type: "line",
+            type: "bar", // Changed from "line" to "bar"
             data: {
                 labels: labels,
                 datasets: [
                     {
-                        label: "Normalized Prevalence",
+                        label: "Prevalence",
                         data: popularities,
-                        fill: false,
-                        tension: 0.1,
-                        borderColor: "rgb(75, 192, 192)" // Example line color
+                        backgroundColor: primaryColor,
+                        borderColor: primaryColor,
+                        borderWidth: 1,
+                        hoverBackgroundColor: primaryColor
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                onClick: (event, elements) => {
+                    if (elements.length > 0 && data.query) {
+                        const chartElement = elements[0];
+                        const index = chartElement.index;
+                        const year = labels[index]; // Year is a string here
+
+                        const searchParams = new URLSearchParams();
+                        searchParams.set("query", data.query);
+                        searchParams.set("startYear", year);
+                        searchParams.set("endYear", year);
+                        searchParams.set("sort", "vector");
+
+                        goto(`/search?${searchParams.toString()}`);
+                    }
+                },
                 scales: {
                     y: {
                         title: {
                             display: true,
-                            text: "Normalized Prevalence"
+                            text: "Prevalence"
                         },
                         beginAtZero: true,
                         ticks: {
                             callback: function (value) {
-                                // Ensure 'value' is treated as a number for toFixed
                                 const numValue =
                                     typeof value === "string" ? parseFloat(value) : value;
-                                return numValue.toFixed(3); // Adjust precision as needed
+                                return numValue.toFixed(3);
                             }
                         }
                     },
@@ -71,7 +93,7 @@
                 },
                 plugins: {
                     legend: {
-                        display: false // No legend needed for a single dataset
+                        display: false
                     },
                     tooltip: {
                         mode: "index",
@@ -83,7 +105,7 @@
                                     label += ": ";
                                 }
                                 if (context.parsed.y !== null) {
-                                    label += context.parsed.y.toFixed(4); // Tooltip precision
+                                    label += context.parsed.y.toFixed(4);
                                 }
                                 return label;
                             }
@@ -94,7 +116,6 @@
         });
     }
 
-    // Update local form state if props change (e.g. after navigation)
     $effect(() => {
         formQuery = data.query ?? "";
         formTau = data.currentTau.toString();
@@ -106,7 +127,6 @@
         } else if (chartInstance) {
             chartInstance.destroy();
             chartInstance = null;
-            // Clear canvas content if it's visible and there's no data or an error
             const ctx = chartCanvas?.getContext("2d");
             if (ctx && chartCanvas) {
                 ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
@@ -225,7 +245,7 @@
 
         {#if data.query && !data.error}
             <div class="text-surface-500-400 mt-4 text-center text-xs">
-                Using similarity threshold (τ): {data.currentTau.toFixed(2)}
+                Using similarity threshold of {data.currentTau.toFixed(2)}
             </div>
         {/if}
     </main>

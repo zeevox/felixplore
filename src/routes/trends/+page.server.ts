@@ -1,3 +1,4 @@
+// src/routes/trends/+page.server.ts
 import db from "$lib/server/db";
 import type { PageServerLoad, Actions } from "./$types";
 import { getQueryEmbedding } from "$lib/server/embed";
