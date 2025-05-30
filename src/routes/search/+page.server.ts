@@ -1,126 +1,119 @@
-// src/routes/search/+page.server.ts
-import db from '$lib/server/db';
+// src/routes/search/+page.server.js
 import type { Article } from '$lib/types/article';
-import { fail, redirect } from '@sveltejs/kit';
+import { error as SvelteKitError, redirect, isRedirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { ARTICLES_PER_PAGE } from '$lib/config';
+import { getQueryEmbedding } from '$lib/server/embed';
+import { searchArticles, SortOrder } from '$lib/server/search';
 
-// Define available sort orders
-enum SortOrder {
-    Relevance = 'relevance',
-    DateAsc = 'date_asc',
-    DateDesc = 'date_desc'
+interface SearchPageData {
+    articles: Promise<Article[]>;
+    searchQuery: string;
+    currentPage: number;
+    sortOrder: SortOrder;
 }
 
-export const load: PageServerLoad = async ({ url }) => {
-    const currentPage = Number(url.searchParams.get('page') || '1');
+export const load: PageServerLoad<SearchPageData> = async ({ url, depends }) => {
+    // Register dependencies for SvelteKit's invalidation mechanism
+    depends('app:search:query:' + url.searchParams.get('query'));
+    depends('app:search:page:' + url.searchParams.get('page'));
+    depends('app:search:sort:' + url.searchParams.get('sort'));
+
+    const currentPageParam = url.searchParams.get('page') || '1';
+    const currentPage = Number(currentPageParam);
     const searchQuery = (url.searchParams.get('query') || '').trim();
-    // Get sort order from URL, default to Relevance
-    const sortOrderParam = url.searchParams.get('sort') as SortOrder;
-    const currentSortOrder = Object.values(SortOrder).includes(sortOrderParam) ? sortOrderParam : SortOrder.Relevance;
+    const sortOrderParam = url.searchParams.get('sort') as string | null;
+
+    const isValidSortOrder = (value: string | null): value is SortOrder => {
+        return value !== null && Object.values(SortOrder).includes(value as SortOrder);
+    };
+
+    const currentSortOrder = isValidSortOrder(sortOrderParam)
+        ? sortOrderParam
+        : SortOrder.Hybrid;
 
     if (!searchQuery) {
         redirect(307, '/');
     }
 
-    if (currentPage < 1) {
-        redirect(307, `/search?query=${encodeURIComponent(searchQuery)}&page=1&sort=${currentSortOrder}`);
+    if (!Number.isInteger(currentPage) || currentPage < 1) {
+        const newParams = new URLSearchParams(url.searchParams);
+        newParams.set('query', searchQuery); // Ensure current query is set
+        newParams.set('page', '1');
+        newParams.set('sort', currentSortOrder); // Ensure current sort is set
+        redirect(307, `/search?${newParams.toString()}`);
     }
 
-    let articles: Article[] = [];
-    let totalArticles = 0;
-    let totalPages = 0;
+    const articlesPromise = (async (): Promise<Article[]> => {
+        try {
+            const articlesData = await searchArticles({
+                searchQuery,
+                currentPage,
+                sortOrder: currentSortOrder,
+                articlesPerPage: ARTICLES_PER_PAGE,
+                getQueryEmbeddingFn: getQueryEmbedding
+            });
+
+            if (articlesData.length === 0 && currentPage > 1) {
+                const newParams = new URLSearchParams(url.searchParams);
+                newParams.set('query', searchQuery);
+                newParams.set('page', '1');
+                newParams.set('sort', currentSortOrder);
+                redirect(307, `/search?${newParams.toString()}`);
+            }
+            return articlesData;
+        } catch (err) {
+            // Rethrow SvelteKit recognized errors (HttpError, Redirect)
+            if (isRedirect(err) || (err && typeof err === 'object' && 'status' in err && 'body' in err)) {
+                throw err;
+            }
+            // Log unexpected errors from the IIFE and throw a generic SvelteKit error
+            console.error('Unexpected error during articlesPromise execution:', err);
+            SvelteKitError(500, 'An internal error occurred while preparing articles. Please try again.');
+        }
+    })();
 
     try {
-        const offset = (currentPage - 1) * ARTICLES_PER_PAGE;
-
-        let orderByClause = '';
-        switch (currentSortOrder) {
-            case SortOrder.DateAsc:
-                orderByClause = 'ORDER BY a.article_date ASC, rank DESC';
-                break;
-            case SortOrder.DateDesc:
-                orderByClause = 'ORDER BY a.article_date DESC, rank DESC';
-                break;
-            case SortOrder.Relevance:
-            default:
-                orderByClause = 'ORDER BY rank DESC, a.article_date DESC';
-                break;
-        }
-
-        const dbQuery = `
-            WITH search_params AS (
-                SELECT websearch_to_tsquery('english', $1) AS query_tsvector
-            )
-            SELECT
-                a.id,
-                a.publication,
-                a.issue_no,
-                a.page_no,
-                a.article_date,
-                a.headline,
-                a.strapline,
-                a.author,
-                a.category,
-                a.txt,
-                ts_rank_cd(a.search_vector, sp.query_tsvector) AS rank,
-                COUNT(*) OVER() AS total_count
-            FROM articles a, search_params sp
-            WHERE a.search_vector @@ sp.query_tsvector
-            ${orderByClause}
-            LIMIT $2 OFFSET $3;
-        `;
-
-        const result = await db.query(dbQuery, [searchQuery, ARTICLES_PER_PAGE, offset]);
-
-        if (result.rows.length > 0) {
-            articles = result.rows.map(row => ({
-                ...row,
-                article_date: new Date(row.article_date),
-            }));
-            totalArticles = parseInt(result.rows[0].total_count, 10);
-            totalPages = Math.ceil(totalArticles / ARTICLES_PER_PAGE);
-        } else {
-            totalArticles = 0;
-            totalPages = 0;
-        }
-
-        if (currentPage > totalPages && totalPages > 0) {
-            redirect(307, `/search?query=${encodeURIComponent(searchQuery)}&page=${totalPages}&sort=${currentSortOrder}`);
-        }
-
-    } catch (err: any) {
-        console.error('Database query error:', err);
-        return fail(500, {
-            error: 'Could not retrieve articles. A server error occurred.',
-            articles: [],
+        return {
+            articles: articlesPromise, // Stream the promise
             searchQuery,
             currentPage,
-            totalPages: 0,
-            totalArticles: 0,
-            sortOrder: currentSortOrder, // Pass current sort order even on error
-        });
+            sortOrder: currentSortOrder,
+        };
+    } catch (err: unknown) {
+        // This primarily catches synchronous errors or issues with the load function structure itself.
+        if (isRedirect(err)) {
+            throw err;
+        }
+        if (err && typeof err === 'object' && 'status' in err && 'body' in err) { // HttpError
+            throw err;
+        }
+        console.error('Unexpected error in search load function structure:', err);
+        SvelteKitError(500, 'Could not process search request due to a server configuration issue.');
     }
-
-    return {
-        articles,
-        searchQuery,
-        currentPage,
-        totalPages,
-        totalArticles,
-        sortOrder: currentSortOrder, // Pass current sort order
-    };
 };
 
 export const actions: Actions = {
     default: async ({ request }) => {
         const data = await request.formData();
         const query = (data.get('searchQuery') as string || '').trim();
+        const submittedSortOrder = data.get('sortOrder') as string | null;
 
         if (!query) {
             redirect(303, `/`);
         }
-        // New searches from the main search bar will default to 'relevance' sort
-        redirect(303, `/search?query=${encodeURIComponent(query)}&page=1&sort=${SortOrder.Relevance}`);
+
+        const isValidSortOrder = (value: string | null): value is SortOrder => {
+            return value !== null && Object.values(SortOrder).includes(value as SortOrder);
+        };
+        const sortToUse = isValidSortOrder(submittedSortOrder)
+            ? submittedSortOrder
+            : SortOrder.Hybrid;
+
+        const params = new URLSearchParams();
+        params.set('query', query);
+        params.set('page', '1');
+        params.set('sort', sortToUse);
+        redirect(303, `/search?${params.toString()}`);
     },
 };

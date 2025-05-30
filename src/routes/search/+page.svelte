@@ -1,58 +1,65 @@
 <script lang="ts">
     import Search from '@lucide/svelte/icons/search';
-    import { Pagination } from '@skeletonlabs/skeleton-svelte';
     import { enhance } from '$app/forms';
     import { goto } from '$app/navigation';
     import { ARTICLES_PER_PAGE } from '$lib/config';
-    // Assuming SortOrder enum might be imported if shared, or use string literals
-    import IconArrowLeft from '@lucide/svelte/icons/arrow-left';
-    import IconArrowRight from '@lucide/svelte/icons/arrow-right';
-    import IconEllipsis from '@lucide/svelte/icons/ellipsis';
-    import IconFirst from '@lucide/svelte/icons/chevrons-left';
-    import IconLast from '@lucide/svelte/icons/chevrons-right';
     import ArticleResult from '$lib/components/ArticleResult.svelte';
+    import LoaderCircle from '@lucide/svelte/icons/loader-circle';
+    import ServerCrash from '@lucide/svelte/icons/server-crash';
+    import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
+    import { page } from '$app/state';
 
-    let { data } = $props();
+    // data can be undefined if load fails very early before returning its structure
+    let { data } = $props<{
+        articles?: Promise<import('$lib/types/article').Article[]>;
+        searchQuery?: string;
+        currentPage?: number;
+        sortOrder?: string; // Should match SortOrder enum values from server
+    }>();
 
-    // Reactive statements for data from server
-    let articles = $derived(data.articles);
-    let currentSearchQuery = $derived(data.searchQuery);
-    let currentPage = $derived(data.currentPage);
-    let totalPages = $derived(data.totalPages);
-    let totalArticles = $derived(data.totalArticles);
-    let serverSortOrder = $derived(data.sortOrder || 'relevance'); // Default to 'relevance'
+    const pageError = $derived(page.error);
+
+    // Derived values for display, with fallbacks for robustness
+    let currentSearchQuery = $derived(data?.searchQuery ?? '');
+    let currentPage = $derived(data?.currentPage ?? 1);
+    // serverSortOrder is used for the select's value and hidden form input.
+    // It should reflect the actual sort order from data or URL as a fallback.
+    // 'keyword' is the value for SortOrder.Verbatim
+    let serverSortOrder = $derived(data?.sortOrder ?? (page.url.searchParams.get('sort') || 'rrf'));
 
     const sortOptions = [
-        { value: 'relevance', label: 'Relevance' },
-        { value: 'date_desc', label: 'Date (Newest)' },
-        { value: 'date_asc', label: 'Date (Oldest)' }
+        { value: 'rrf', label: 'Relevance' },
+        { value: 'keyword', label: 'Exact match' },
+        { value: 'vector', label: 'Same concept' },
     ];
 
-    function handlePageChange(event: { page: number }) {
-        const newPage = event.page;
+    function handleNextPage() {
+        const newPage = (data?.currentPage ?? 1) + 1; // Use data.currentPage if available
         const params = new URLSearchParams(window.location.search);
         params.set('page', newPage.toString());
-        // currentSearchQuery and serverSortOrder are derived and reflect current URL state
-        if (currentSearchQuery) {
-            params.set('query', currentSearchQuery);
-        }
-        params.set('sort', serverSortOrder); // Use the sort order from data
-        goto(`/search?${params.toString()}`, { keepFocus: true, invalidateAll: true });
+        goto(`/search?${params.toString()}`, { keepFocus: true });
     }
 
     function handleSortChange(event: Event) {
         const newSortValue = (event.currentTarget as HTMLSelectElement).value;
-        const params = new URLSearchParams();
-        if (currentSearchQuery) {
-            params.set('query', currentSearchQuery);
-        }
+        const params = new URLSearchParams(window.location.search);
         params.set('sort', newSortValue);
         params.set('page', '1'); // Reset to page 1 on sort change
-        goto(`/search?${params.toString()}`, { keepFocus: true, invalidateAll: true });
+        goto(`/search?${params.toString()}`, { keepFocus: true });
     }
 </script>
 
-<div class="bg-surface-50-950 text-surface-900-50 flex h-full flex-col">
+<svelte:head>
+    <title>Search: {pageError ? 'Error' : (currentSearchQuery || 'Archive')}</title>
+    {#if currentSearchQuery && !pageError}
+        <meta
+            name="description"
+            content="Search results for {currentSearchQuery} in the Felixplore archive."
+        />
+    {/if}
+</svelte:head>
+
+<div class="bg-surface-50-950 text-surface-900-50 flex min-h-screen flex-col">
     <header
         class="border-surface-200-800 bg-surface-100-900/80 sticky top-0 z-10 border-b p-4 backdrop-blur-sm"
     >
@@ -65,29 +72,32 @@
                 >Felixplore</a
             >
             <form method="POST" use:enhance class="flex-grow">
-                <label class="label w-full">
-                    <span class="label-text sr-only">Search the archive</span>
+                <input type="hidden" name="sortOrder" value={serverSortOrder} />
+                <label class="w-full">
+                    <span class="sr-only">Search the archive</span>
                     <div
-                        class="input-group preset-filled-surface-200-800 focus-within:ring-primary-500 grid-cols-[auto_1fr_auto] rounded-full shadow-sm transition-all duration-200 ease-in-out focus-within:shadow-lg focus-within:ring-2 hover:shadow-md"
+                        class="input-group preset-filled-surface-200-800 focus-within:ring-primary-500 grid grid-cols-[auto_1fr_auto] rounded-full shadow-sm transition-all duration-200 ease-in-out focus-within:shadow-lg focus-within:ring-2 hover:shadow-md"
                     >
                         <div
-                            class="ig-cell text-surface-500-400 flex items-center justify-center pr-1 pl-3 md:pl-4"
+                            class="text-surface-500-400 flex items-center justify-center pr-1 pl-3 md:pl-4"
                         >
                             <Search size={18} />
                         </div>
                         <input
                             type="search"
                             name="searchQuery"
-                            class="ig-input placeholder:text-surface-400-600 resize-none overflow-hidden border-none bg-transparent py-2.5 text-sm leading-tight focus:ring-0 md:text-base"
+                            class="ig-input placeholder:text-surface-400-600 w-full resize-none overflow-hidden border-none bg-transparent py-2.5 text-sm leading-tight focus:ring-0 md:text-base"
                             placeholder="Search the archive..."
                             value={currentSearchQuery}
                             style="min-height: 2.25rem;"
+                            aria-label="Search the archive"
                         />
                         {#if currentSearchQuery}
-                            <div class="ig-cell flex items-center justify-center pr-2 pl-1">
+                            <div class="flex items-center justify-center pr-2 pl-1">
                                 <button
                                     type="submit"
                                     title="Search"
+                                    aria-label="Submit search"
                                     class="btn-icon preset-tonal-primary hover:preset-filled-primary focus:preset-filled-primary text-primary-500 rounded-full p-1.5 transition-colors"
                                 >
                                     <Search size={18} />
@@ -102,77 +112,105 @@
     </header>
 
     <main class="container mx-auto max-w-5xl flex-grow space-y-8 p-4 md:p-8">
-        {#if articles && articles.length > 0}
-            <section class="space-y-6">
-                <div
-                    class="border-surface-200-800 flex flex-col items-center justify-between gap-4 border-b pb-4 md:flex-row"
-                >
-                    <p class="text-surface-800-200 text-sm">
-                        Found {totalArticles} results for "{currentSearchQuery}"
-                    </p>
-                    <div class="flex items-center gap-2">
-                        <label for="sort-order-select" class="text-surface-800-200 text-sm"
-                            >Sort&nbsp;by:</label
-                        >
-                        <select
-                            id="sort-order-select"
-                            value={serverSortOrder}
-                            onchange={handleSortChange}
-                            class="select select-sm preset-filled-surface-200-800 focus:ring-primary-500 border-surface-300-700 hover:border-primary-500/50 rounded-md py-1.5 shadow-sm transition-colors"
-                        >
-                            {#each sortOptions as option}
-                                <option
-                                    value={option.value}
-                                    selected={option.value === serverSortOrder}
-                                    >{option.label}</option
-                                >
-                            {/each}
-                        </select>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 gap-6">
-                    {#each articles as article (article.id)}
-                        <ArticleResult {article} />
-                    {/each}
-                </div>
-
-                {#if totalPages && totalPages > 1}
-                    <footer class="flex justify-center pt-8">
-                        <Pagination
-                            data={articles}
-                            count={totalArticles}
-                            page={currentPage}
-                            onPageChange={handlePageChange}
-                            pageSize={ARTICLES_PER_PAGE}
-                            showFirstLastButtons
-                            alternative
-                            base="btn-group preset-filled-surface-100-900"
-                            buttonActive="preset-filled-primary-500"
-                            buttonInactive="hover:preset-tonal-surface-300-700"
-                        >
-                            {#snippet labelEllipsis()}<IconEllipsis class="size-4" />{/snippet}
-                            {#snippet labelNext()}<IconArrowRight class="size-4" />{/snippet}
-                            {#snippet labelPrevious()}<IconArrowLeft class="size-4" />{/snippet}
-                            {#snippet labelFirst()}<IconFirst class="size-4" />{/snippet}
-                            {#snippet labelLast()}<IconLast class="size-4" />{/snippet}
-                        </Pagination>
-                    </footer>
-                {/if}
-            </section>
-        {:else if currentSearchQuery}
-            <div class="flex flex-col items-center justify-center pt-16 text-center">
-                <Search size={48} class="text-surface-400-500 mb-6 opacity-75" />
-                <p class="text-surface-700-300 mb-2 text-xl">
-                    No articles found for "{currentSearchQuery}"
+        {#if pageError} <div
+                class="flex flex-col items-center justify-center rounded-md border border-red-500 bg-red-50 p-8 text-center text-red-700"
+            >
+                <ServerCrash size={48} class="mb-6 opacity-75" />
+                <p class="mb-2 text-xl font-semibold">
+                    {#if page.status === 503}
+                        Search Service Error
+                    {:else if page.status >= 500}
+                        Server Error
+                    {:else if page.status >= 400}
+                        Input Error
+                    {:else}
+                        Error
+                    {/if}
+                    ({page.status})
                 </p>
-                <p class="text-surface-500-400 text-sm">
-                    Try refining your search terms or check for typos.
-                </p>
+                <p class="text-sm">{pageError.message}</p>
+                <a href="/" class="btn preset-outline-primary mt-6">Go to Homepage</a>
             </div>
-        {:else}
-            <div class="flex h-full flex-col items-center justify-center pt-16 text-center">
+        {:else if data?.searchQuery} <div
+                class="border-surface-200-800 flex flex-col items-center justify-between gap-4 border-b pb-4 md:flex-row"
+            >
+                <div class="flex items-center gap-2">
+                    <label for="sort-order-select" class="text-surface-800-200 text-sm"
+                        >Sort&nbsp;by:</label
+                    >
+                    <select
+                        id="sort-order-select"
+                        value={serverSortOrder}
+                        onchange={handleSortChange}
+                        class="select select-sm preset-filled-surface-200-800 focus:ring-primary-500 border-surface-300-700 hover:border-primary-500/50 rounded-md py-1.5 shadow-sm transition-colors"
+                        aria-label="Sort order"
+                    >
+                        {#each sortOptions as option}
+                            <option value={option.value}>{option.label}</option>
+                        {/each}
+                    </select>
+                </div>
+            </div>
+
+            {#await data.articles}
+                <div class="flex flex-col items-center justify-center pt-16 text-center">
+                    <LoaderCircle size={48} class="text-primary-500 mb-6 animate-spin opacity-75" />
+                    <p class="text-surface-700-300 text-xl">Loading articles...</p>
+                </div>
+            {:then articles}
+                {#if articles && articles.length > 0}
+                    <section class="space-y-2 pt-0">
+                        <div class="grid grid-cols-1 gap-6">
+                            {#each articles as article (article.id)}
+                                <ArticleResult {article} />
+                            {/each}
+                        </div>
+
+                        {#if articles.length === ARTICLES_PER_PAGE}
+                            <footer class="flex justify-center pt-8">
+                                <button
+                                    type="button"
+                                    class="btn preset-filled-primary hover:variant-soft-primary focus:variant-soft-primary"
+                                    onclick={handleNextPage}
+                                >
+                                    Next Page
+                                </button>
+                            </footer>
+                        {/if}
+                    </section>
+                {:else}
+                     <div class="flex flex-col items-center justify-center pt-12 text-center">
+                        <Search size={48} class="text-surface-400-500 mb-6 opacity-75" />
+                        <p class="text-surface-700-300 mb-2 text-xl">
+                            No articles found for "{currentSearchQuery}"
+                        </p>
+                        {#if currentPage > 1}
+                            <p class="text-surface-500-400 mb-4 text-sm">
+                                You are on page {currentPage}.
+                            </p>
+                        {/if}
+                        <p class="text-surface-500-400 text-sm">
+                            Try refining your search, check for typos, or select a different sort order above.
+                        </p>
+                    </div>
+                {/if}
+            {:catch error} <div
+                    class="flex flex-col items-center justify-center rounded-md border border-red-500 bg-red-50 p-8 text-center text-red-700"
+                >
+                    <AlertTriangle size={48} class="mb-6 opacity-75" />
+                    <p class="mb-2 text-xl font-semibold">Error Loading Articles</p>
+                    <p class="text-sm">{error.body?.message || error.message || 'An unexpected error occurred while fetching articles.'}</p>
+                    <button
+                        class="btn preset-outline-error mt-6"
+                        onclick={() => window.location.reload()}>Try Again</button
+                    >
+                </div>
+            {/await}
+        {:else} <div class="flex h-full flex-col items-center justify-center pt-16 text-center">
                 <Search size={64} class="text-surface-400-500 mb-4 opacity-50" />
-                <p class="text-surface-500-400 text-lg">Search the Felix archive.</p>
+                <p class="text-surface-500-400 text-lg">
+                    Enter a term to search the Felix archive.
+                </p>
             </div>
         {/if}
     </main>
