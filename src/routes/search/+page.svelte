@@ -41,7 +41,7 @@
         Array.from({ length: MAX_YEAR - MIN_YEAR + 1 }, (_, i) => (MIN_YEAR + i).toString())
     );
     const startYearOptions = $derived(["", ...availableYears]); // Empty string for "Any Year"
-    const endYearOptions = $derived(["", ...[...availableYears].reverse()]); // Empty string for "Any Year"
+    const endYearOptions = $derived(["", ...availableYears]); // Empty string for "Any Year"
 
     const sortOptions = [
         { value: "rrf", label: "All results" },

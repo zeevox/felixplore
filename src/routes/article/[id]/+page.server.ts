@@ -50,7 +50,7 @@ export const load: PageServerLoad = async ({ params }) => {
             [articleId, pgvector.toSql(articleVector)]
         );
 
-        recommendationsResult.rows.sort(() => Math.random() - 0.5);
+        // recommendationsResult.rows.sort(() => Math.random() - 0.5);
 
         recommendedArticles = recommendationsResult.rows.map(row => ({
             ...row,

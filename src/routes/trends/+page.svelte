@@ -64,7 +64,6 @@
                         searchParams.set("query", data.query);
                         searchParams.set("startYear", year);
                         searchParams.set("endYear", year);
-                        searchParams.set("sort", "vector");
 
                         goto(`/search?${searchParams.toString()}`);
                     }
