@@ -1,37 +1,37 @@
 <!-- /src/routes/article/[id]/+page.svelte -->
 <script lang="ts">
-	import ArticleCard from '$lib/components/ArticleCard.svelte';
-	import ArticleDisplay from '$lib/components/ArticleDisplay.svelte';
-	import type { PageData } from './$types';
+  import ArticleCard from "$lib/components/ArticleCard.svelte";
+  import ArticleDisplay from "$lib/components/ArticleDisplay.svelte";
+  import type { PageData } from "./$types";
 
-	let { data }: { data: PageData } = $props();
+  let { data }: { data: PageData } = $props();
 </script>
 
 <div class="container mx-auto p-4 md:p-8">
-	<header class="text-left">
-		<a href="/">
-			<h3 class="h3 py-4">Felixplore</h3>
-		</a>
-		<hr class="opacity-20 mb-8" />
-	</header>
-	<div class="flex flex-col lg:flex-row gap-16">
-		<main class="lg:w-2/3">
-			{#if data.article}
-				<ArticleDisplay article={data.article} />
-			{:else}
-				<div class="text-center">
-					<p class="text-xl text-error-500">Article could not be loaded.</p>
-				</div>
-			{/if}
-		</main>
+  <header class="text-left">
+    <a href="/">
+      <h3 class="h3 py-4">Felixplore</h3>
+    </a>
+    <hr class="mb-8 opacity-20" />
+  </header>
+  <div class="flex flex-col gap-16 lg:flex-row">
+    <main class="lg:w-2/3">
+      {#if data.article}
+        <ArticleDisplay article={data.article} />
+      {:else}
+        <div class="text-center">
+          <p class="text-error-500 text-xl">Article could not be loaded.</p>
+        </div>
+      {/if}
+    </main>
 
-		{#if data.recommendedArticles && data.recommendedArticles.length > 0}
-			<aside class="lg:w-1/3 space-y-6">
-				<h3 class="h6 mb-4">More like this</h3>
-				{#each data.recommendedArticles as recommendedArticle (recommendedArticle.id)}
-					<ArticleCard article={recommendedArticle} />
-				{/each}
-			</aside>
-		{/if}
-	</div>
+    {#if data.recommendedArticles && data.recommendedArticles.length > 0}
+      <aside class="space-y-6 lg:w-1/3">
+        <h3 class="h6 mb-4">More like this</h3>
+        {#each data.recommendedArticles as recommendedArticle (recommendedArticle.id)}
+          <ArticleCard article={recommendedArticle} />
+        {/each}
+      </aside>
+    {/if}
+  </div>
 </div>

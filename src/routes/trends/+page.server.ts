@@ -1,36 +1,38 @@
 // src/routes/trends/+page.server.ts
 import db from "$lib/server/db";
-import type { PageServerLoad, Actions } from "./$types";
 import { getQueryEmbedding, SIMILARITY_THRESHOLD } from "$lib/server/embed";
-import { error as SvelteKitError, isRedirect, redirect } from "@sveltejs/kit";
+import { isRedirect, redirect, error as SvelteKitError } from "@sveltejs/kit";
+import type { Actions, PageServerLoad } from "./$types";
+
+type TrendRow = { year: string; normalized_prevalence: string };
 
 interface TrendsPageData {
-    query: string | null;
-    trendData: Promise<{ year: number; popularity: number }[]> | null;
-    error: string | null;
+  query: string | null;
+  trendData: Promise<{ year: number; popularity: number }[]> | null;
+  error: string | null;
 }
 
 export const load: PageServerLoad<TrendsPageData> = ({ url }) => {
-    const queryParam = url.searchParams.get("query");
+  const queryParam = url.searchParams.get("query");
 
-    if (!queryParam) {
-        return {
-            query: null,
-            trendData: null,
-            error: null
-        };
-    }
+  if (!queryParam) {
+    return {
+      query: null,
+      trendData: null,
+      error: null,
+    };
+  }
 
-    const trendData = (async (): Promise<{ year: number; popularity: number }[]> => {
-        try {
-            const queryEmbedding = await getQueryEmbedding(queryParam);
-            if (!queryEmbedding) {
-                throw new Error(
-                    "Failed to generate embedding for the query. Check server logs for details. Ensure Google GenAI SDK is configured."
-                );
-            }
+  const trendData = (async (): Promise<{ year: number; popularity: number }[]> => {
+    try {
+      const queryEmbedding = await getQueryEmbedding(queryParam);
+      if (!queryEmbedding) {
+        throw new Error(
+          "Failed to generate embedding for the query. Check server logs for details. Ensure Google GenAI SDK is configured.",
+        );
+      }
 
-            const sqlQuery = `
+      const sqlQuery = `
                 WITH all_years AS (
                     SELECT EXTRACT(YEAR FROM article_date)::integer AS year, COUNT(*)
                     FROM articles
@@ -62,51 +64,48 @@ export const load: PageServerLoad<TrendsPageData> = ({ url }) => {
                 ORDER BY ay.year ASC;
             `;
 
-            const result = await db.query(sqlQuery, [
-                JSON.stringify(queryEmbedding),
-                SIMILARITY_THRESHOLD
-            ]);
+      const result = await db.query<TrendRow>(sqlQuery, [
+        JSON.stringify(queryEmbedding),
+        SIMILARITY_THRESHOLD,
+      ]);
 
-            return result.rows.map((row) => ({
-                year: parseInt(row.year, 10),
-                popularity: parseFloat(row.normalized_prevalence)
-            }));
-        } catch (err: unknown) {
-            if (
-                isRedirect(err) ||
-                (err && typeof err === "object" && "status" in err && "body" in err)
-            ) {
-                throw err;
-            }
-            console.error("Error fetching trend data:", err);
-            throw SvelteKitError(
-                500,
-                err instanceof Error
-                    ? `Failed to fetch trend data: ${err.message}`
-                    : "Failed to fetch trend data"
-            );
-        }
-    })();
+      return result.rows.map((row) => ({
+        year: parseInt(row.year, 10),
+        popularity: parseFloat(row.normalized_prevalence),
+      }));
+    } catch (err: unknown) {
+      if (isRedirect(err) || (err && typeof err === "object" && "status" in err && "body" in err)) {
+        throw err;
+      }
+      console.error("Error fetching trend data:", err);
+      throw SvelteKitError(
+        500,
+        err instanceof Error
+          ? `Failed to fetch trend data: ${err.message}`
+          : "Failed to fetch trend data",
+      );
+    }
+  })();
 
-    return {
-        query: queryParam,
-        trendData,
-        error: null
-    };
+  return {
+    query: queryParam,
+    trendData,
+    error: null,
+  };
 };
 
 export const actions: Actions = {
-    default: async ({ request }) => {
-        const data = await request.formData();
-        const query = ((data.get("query") as string) || "").trim();
+  default: async ({ request }) => {
+    const data = await request.formData();
+    const query = ((data.get("query") as string) || "").trim();
 
-        const params = new URLSearchParams();
+    const params = new URLSearchParams();
 
-        if (query) {
-            params.set("query", query);
-        }
-
-        const redirectPath = `/trends${params.size > 0 ? `?${params.toString()}` : ""}`;
-        redirect(303, redirectPath);
+    if (query) {
+      params.set("query", query);
     }
+
+    const redirectPath = `/trends${params.size > 0 ? `?${params.toString()}` : ""}`;
+    redirect(303, redirectPath);
+  },
 };

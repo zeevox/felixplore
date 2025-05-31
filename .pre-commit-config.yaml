@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+
+  - repo: local
+    hooks:
+      - id: prettier
+        name: Prettier formatting
+        entry: npm exec prettier -- --write
+        language: node
+        files: \.(js|jsx|ts|tsx|svelte|css|scss|json|html|md|yaml|yml)$
+
+      - id: eslint
+        name: ESLint fix
+        entry: npm exec eslint -- --fix
+        language: node
+        files: \.(js|jsx|ts|tsx|svelte)$
+
+      - id: svelte-check
+        name: Svelte + TypeScript type-check (svelte-check)
+        entry: npm run check
+        language: node
+        pass_filenames: false
+        always_run: true

@@ -16,14 +16,14 @@ import type { UUIDTypes } from "uuid";
  * @property txt The text of the article.
  */
 export interface Article {
-    id: UUIDTypes;
-    publication: string;
-    issue_no: number;
-    page_no: number;
-    article_date: Date;
-    headline?: string | null;
-    strapline?: string | null;
-    author?: string | null;
-    category?: string | null;
-    txt: string;
+  id: UUIDTypes;
+  publication: string;
+  issue_no: number;
+  page_no: number;
+  article_date: Date;
+  headline?: string | null;
+  strapline?: string | null;
+  author?: string | null;
+  category?: string | null;
+  txt: string;
 }

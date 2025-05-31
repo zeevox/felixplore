@@ -46,3 +46,26 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+
+## Pre-commit Hooks
+
+This project uses [pre-commit](https://pre-commit.com) to run checks and format code before each commit. To get started:
+
+```bash
+# Install pre-commit (if not already installed)
+uv tool install pre-commit
+
+# Install the Git hooks
+pre-commit install
+
+# (Optional) Run hooks on all files initially
+pre-commit run --all-files
+```
+
+The pre-commit hooks include:
+
+- Remove trailing whitespace and fix end-of-file markers
+- Validate YAML files
+- Format YAML, JSON, JavaScript, TypeScript, Svelte, CSS, HTML, and Markdown files with Prettier
+- Run ESLint auto-fix on JavaScript, TypeScript, and Svelte files
+- Type-check TypeScript and Svelte files with `npm run check` (via svelte-check)

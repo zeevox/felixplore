@@ -33,7 +33,7 @@ services:
     restart: unless-stopped
     networks:
       - felixplore
-      - web  # for exposing to the internet
+      - web # for exposing to the internet
     depends_on:
       - db
     labels:
