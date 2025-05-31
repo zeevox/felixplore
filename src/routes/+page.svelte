@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Search from '@lucide/svelte/icons/search';
 	import Dices from '@lucide/svelte/icons/dices';
+	import TrendingUp from '@lucide/svelte/icons/trending-up';
 
 	let searchQuery = $state('');
 </script>
@@ -63,16 +64,30 @@
 			<a
 				href="/random"
 				class="btn preset-outlined-secondary-800-200
-                       hover:shadow-secondary-500/30 w-auto
-                       transform rounded-full
-                       border-2 py-3
-                       text-base font-semibold
-                       shadow-lg transition-all duration-200 ease-out hover:scale-102 active:scale-96
-                       sm:px-10"
+	                       hover:shadow-secondary-500/30 w-auto
+	                       transform rounded-full
+	                       border-2 py-3
+	                       text-base font-semibold
+	                       shadow-lg transition-all duration-200 ease-out hover:scale-102 active:scale-96
+	                       sm:px-10"
 				aria-label="Find a random article"
 			>
 				<Dices class="mr-2 inline-block" size={20} />
 				I'm Feeling Lucky
+			</a>
+			<a
+				href="/trends"
+				class="btn preset-outlined-secondary-800-200
+	                       hover:shadow-secondary-500/30 w-auto
+	                       transform rounded-full
+	                       border-2 py-3
+	                       text-base font-semibold
+	                       shadow-lg transition-all duration-200 ease-out hover:scale-102 active:scale-96
+	                       sm:px-10"
+				aria-label="Explore trends"
+			>
+				<TrendingUp class="mr-2 inline-block" size={20} />
+				Trends
 			</a>
 		</div>
 	</div>
