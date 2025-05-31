@@ -4,12 +4,14 @@
     import { enhance } from "$app/forms";
     import { goto } from "$app/navigation";
     import Search from "@lucide/svelte/icons/search";
+    import LoaderCircle from "@lucide/svelte/icons/loader-circle";
+    import AlertTriangle from "@lucide/svelte/icons/alert-triangle";
 
     Chart.register(...registerables);
 
     let { data } = $props<{
         query: string | null;
-        trendData: { year: number; popularity: number }[] | null;
+        trendData: Promise<{ year: number; popularity: number }[]> | null;
         error: string | null;
     }>();
 
@@ -115,16 +117,27 @@
     });
 
     $effect(() => {
-        if (data.trendData && data.trendData.length > 0 && chartCanvas && data.query) {
-            createChart(data.trendData);
-        } else if (chartInstance) {
-            chartInstance.destroy();
-            chartInstance = null;
-            const ctx = chartCanvas?.getContext("2d");
-            if (ctx && chartCanvas) {
-                ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+        if (!data.trendData || !chartCanvas || !data.query) {
+            if (chartInstance && chartCanvas) {
+                chartInstance.destroy();
+                chartInstance = null;
+                const ctx = chartCanvas.getContext("2d");
+                if (ctx) ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
             }
+            return;
         }
+
+        (async () => {
+            const chartData = await data.trendData;
+            if (chartData.length > 0) {
+                createChart(chartData);
+            } else if (chartInstance && chartCanvas) {
+                chartInstance.destroy();
+                chartInstance = null;
+                const ctx = chartCanvas.getContext("2d");
+                if (ctx) ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+            }
+        })();
     });
 
     onDestroy(() => {
@@ -144,7 +157,7 @@
     {/if}
 </svelte:head>
 
-<div class="flex min-h-screen flex-col">
+<div class="flex flex-col">
     <header
         class="border-surface-200-800 bg-surface-100-900/80 sticky top-0 z-10 border-b p-4 backdrop-blur-sm"
     >
@@ -199,7 +212,7 @@
         </div>
     </header>
 
-    <main class="lg:card lg:preset-filled-surface-50-950 lg:p-10 lg:shadow-sm my-6 container mx-auto flex-grow space-y-8 p-4 md:p-8">
+    <main class="lg:card self-center  max-w-7xl space-x-4 lg:preset-filled-surface-50-950 lg:p-10 lg:m-10 lg:shadow-sm my-6 container mx-auto flex-grow space-y-8 p-4 md:p-8">
         {#if data.query && !data.error}
             <h1 class="h1 mb-2 text-2xl md:text-3xl">
                 Trend for <span class="text-primary-500 font-semibold">{data.query}</span>
@@ -212,23 +225,41 @@
                 <h4 class="font-bold">Error Analyzing Trend</h4>
                 <p>{data.error}</p>
             </div>
-        {:else if data.trendData && data.trendData.length > 0 && data.query}
-            <div class="p-4" style="height: 500px;">
-                <canvas bind:this={chartCanvas}></canvas>
-            </div>
-        {:else if data.query && (!data.trendData || data.trendData.length === 0)}
-            <div class="alert variant-outline-surface rounded-md p-6 text-center">
-                <Search size={48} class="text-surface-400-500 mb-4 inline-block opacity-75" />
-                <p class="text-surface-700-300 text-lg">
-                    No trend data found for "<span class="font-semibold">{data.query}</span>".
-                </p>
-                <p class="text-surface-600-400 mt-1 text-sm">
-                    This concept might not be prevalent enough in the archive, or the embedding
-                    model may not have found strong matches.
-                </p>
-            </div>
-        {:else if !data.query && !data.error}
-            <div class="flex h-full flex-col items-center justify-center pt-16 text-center">
+        {:else if data.query}
+            {#await data.trendData}
+                <div class="flex flex-col items-center justify-center text-center">
+                    <LoaderCircle size={48} class="text-primary-500 mb-6 animate-spin opacity-75" />
+                    <p class="text-surface-700-300 text-xl">Loading trend data...</p>
+                </div>
+            {:then trendArray}
+                {#if trendArray.length > 0}
+                    <div class="p-4" style="height: 500px;">
+                        <canvas bind:this={chartCanvas}></canvas>
+                    </div>
+                {:else}
+                    <div class="alert variant-outline-surface rounded-md p-6 text-center">
+                        <Search size={48} class="text-surface-400-500 mb-4 inline-block opacity-75" />
+                        <p class="text-surface-700-300 text-lg">
+                            No trend data found for "<span class="font-semibold">{data.query}</span>".
+                        </p>
+                        <p class="text-surface-600-400 mt-1 text-sm">
+                            This concept might not be prevalent enough in the archive, or the embedding
+                            model may not have found strong matches.
+                        </p>
+                    </div>
+                {/if}
+            {:catch err}
+                <div class="flex flex-col items-center justify-center rounded-md border border-red-500 bg-red-50 p-8 text-center text-red-700">
+                    <AlertTriangle size={48} class="mb-6 opacity-75" />
+                    <p class="mb-2 text-xl font-semibold">Error Loading Trend Data</p>
+                    <p class="text-sm">
+                        {err.body?.message || err.message || "An unexpected error occurred while fetching trend data."}
+                    </p>
+                    <button class="btn preset-outline-error mt-6" onclick={() => window.location.reload()}>Try Again</button>
+                </div>
+            {/await}
+        {:else}
+            <div class="flex flex-col items-center justify-center text-center">
                 <Search size={64} class="text-surface-400-500 mb-4 opacity-50" />
                 <p class="text-surface-500-400 text-lg">
                     Enter a term in the search bar above to analyse its trend over time.
@@ -236,5 +267,5 @@
             </div>
         {/if}
 
-        </main>
+    </main>
 </div>
