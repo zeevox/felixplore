@@ -1,5 +1,7 @@
 // src/lib/server/db.ts
 
+/* We use dynamic environment variables since we can't
+package them statically into the Docker container. */
 import { env } from "$env/dynamic/private";
 import pg, { type QueryResult, type QueryResultRow } from "pg";
 import pgvector from "pgvector/pg"; // Import pgvector

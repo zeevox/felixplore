@@ -31,7 +31,7 @@
 
       {#if article.author}
         <p class="text-md text-surface-600-300">
-          By <a class="font-semibold" href="/search?query={encodeURIComponent(article.author)}">
+          By <a class="font-semibold" href={"/search?query=" + encodeURIComponent(article.author)}>
             {article.author}
           </a>
         </p>
@@ -43,7 +43,7 @@
       class="btn hover:bg-surface-100-900 ml-4 hidden self-start hover:shadow-md xl:flex"
       target="_blank"
       rel="noopener noreferrer"
-      href="https://issues.felixonline.co.uk/{article.publication}_{article.issue_no}.pdf#page={article.page_no}"
+      href={`https://issues.felixonline.co.uk/${article.publication}_${article.issue_no}.pdf#page=${article.page_no}`}
       aria-label="View original"
     >
       View original
@@ -63,7 +63,7 @@
       <a
         target="_blank"
         rel="noopener noreferrer"
-        href="https://issues.felixonline.co.uk/{article.publication}_{article.issue_no}.pdf#page={article.page_no}"
+        href={`https://issues.felixonline.co.uk/${article.publication}_${article.issue_no}.pdf#page=${article.page_no}`}
       >
         <em class="capitalize">{article.publication}</em> Issue #{article.issue_no}, page {article.page_no}
       </a>

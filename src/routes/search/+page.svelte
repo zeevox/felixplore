@@ -23,13 +23,11 @@
 
   const pageError = $derived(page.error);
 
-  let currentSearchQuery = $derived(data?.searchQuery ?? page.url.searchParams.get("query") ?? "");
-  let currentPage = $derived(
-    data?.currentPage ?? parseInt(page.url.searchParams.get("page") || "1"),
-  );
-  let serverSortOrder = $derived(data?.sortOrder ?? page.url.searchParams.get("sort") ?? "rrf");
-  let currentStartYear = $derived(data?.startYear ?? page.url.searchParams.get("startYear") ?? "");
-  let currentEndYear = $derived(data?.endYear ?? page.url.searchParams.get("endYear") ?? "");
+  let currentSearchQuery = $state(data?.searchQuery ?? page.url.searchParams.get("query") ?? "");
+  let currentPage = $state(data?.currentPage ?? parseInt(page.url.searchParams.get("page") || "1"));
+  let serverSortOrder = $state(data?.sortOrder ?? page.url.searchParams.get("sort") ?? "rrf");
+  let currentStartYear = $state(data?.startYear ?? page.url.searchParams.get("startYear") ?? "");
+  let currentEndYear = $state(data?.endYear ?? page.url.searchParams.get("endYear") ?? "");
 
   const MIN_YEAR = 1949;
   const MAX_YEAR = 2025;
@@ -56,25 +54,13 @@
   function handleFilterChange() {
     const params = new URLSearchParams(window.location.search);
 
-    // Update sort order from its select element directly
-    const sortSelect = document.getElementById("sort-order-select") as HTMLSelectElement;
-    if (sortSelect) params.set("sort", sortSelect.value);
+    params.set("sort", serverSortOrder);
+    if (currentStartYear) params.set("startYear", currentStartYear);
+    else params.delete("startYear");
+    if (currentEndYear) params.set("endYear", currentEndYear);
+    else params.delete("endYear");
 
-    // Update start year from its select element
-    const startYearSelect = document.getElementById("start-year-select") as HTMLSelectElement;
-    if (startYearSelect) {
-      if (startYearSelect.value) params.set("startYear", startYearSelect.value);
-      else params.delete("startYear");
-    }
-
-    // Update end year from its select element
-    const endYearSelect = document.getElementById("end-year-select") as HTMLSelectElement;
-    if (endYearSelect) {
-      if (endYearSelect.value) params.set("endYear", endYearSelect.value);
-      else params.delete("endYear");
-    }
-
-    params.set("page", "1"); // Reset to page 1 on any filter change
+    params.set("page", "1");
     goto(`/search?${params.toString()}`, { keepFocus: true });
   }
 </script>
@@ -84,7 +70,7 @@
   {#if currentSearchQuery && !pageError}
     <meta
       name="description"
-      content="Search results for {currentSearchQuery} in the Felixplore archive."
+      content={`Search results for ${currentSearchQuery} in the Felixplore archive.`}
     />
   {/if}
 </svelte:head>
@@ -182,7 +168,7 @@
           </label>
           <select
             id="sort-order-select"
-            value={serverSortOrder}
+            bind:value={serverSortOrder}
             onchange={handleFilterChange}
             class="select select-sm preset-filled-surface-200-800 focus:ring-primary-500 border-surface-300-700 hover:border-primary-500/50 rounded-md py-1.5 shadow-sm transition-colors"
             aria-label="Sort order"
@@ -198,7 +184,7 @@
           </label>
           <select
             id="start-year-select"
-            value={currentStartYear}
+            bind:value={currentStartYear}
             onchange={handleFilterChange}
             class="select select-sm preset-filled-surface-200-800 focus:ring-primary-500 border-surface-300-700 hover:border-primary-500/50 rounded-md py-1.5 shadow-sm transition-colors"
             aria-label="Start year for search filter"
@@ -217,7 +203,7 @@
           </label>
           <select
             id="end-year-select"
-            value={currentEndYear}
+            bind:value={currentEndYear}
             onchange={handleFilterChange}
             class="select select-sm preset-filled-surface-200-800 focus:ring-primary-500 border-surface-300-700 hover:border-primary-500/50 rounded-md py-1.5 shadow-sm transition-colors"
             aria-label="End year for search filter"
@@ -232,7 +218,7 @@
         </div>
         <div class="flex items-center gap-2">
           <a
-            href="/trends?query={encodeURIComponent(currentSearchQuery)}"
+            href={"/trends?query=" + encodeURIComponent(currentSearchQuery)}
             class="btn hover:bg-surface-100-900 ml-4 flex self-start whitespace-nowrap hover:shadow-md"
             aria-label="View trends for current search query"
           >

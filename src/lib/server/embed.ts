@@ -1,4 +1,7 @@
 // src/lib/server/embed.ts
+
+/* We use dynamic environment variables since we can't
+package them statically into the Docker container. */
 import { env } from "$env/dynamic/private";
 import { GoogleGenAI } from "@google/genai";
 import pgvector from "pgvector/pg";

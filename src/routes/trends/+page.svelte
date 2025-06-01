@@ -1,13 +1,24 @@
 <script lang="ts">
-  import { Chart, registerables } from "chart.js";
-  import { onDestroy } from "svelte";
+  import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
   import { enhance } from "$app/forms";
   import { goto } from "$app/navigation";
   import Search from "@lucide/svelte/icons/search";
   import LoaderCircle from "@lucide/svelte/icons/loader-circle";
   import AlertTriangle from "@lucide/svelte/icons/alert-triangle";
 
-  Chart.register(...registerables);
+  import type { Chart as ChartType, ChartComponentLike } from "chart.js";
+
+  let Chart: typeof ChartType;
+  let registerables: readonly ChartComponentLike[] = [];
+
+  onMount(async () => {
+    if (!browser) return;
+    const chartJs = await import("chart.js");
+    Chart = chartJs.Chart;
+    registerables = chartJs.registerables;
+    Chart.register(...registerables);
+  });
 
   let { data } = $props<{
     query: string | null;
@@ -15,12 +26,15 @@
     error: string | null;
   }>();
 
-  let formQuery = $derived(data.query ?? "");
+  let formQuery = $state(data.query ?? "");
 
   let chartCanvas = $state<HTMLCanvasElement>();
-  let chartInstance: Chart | null = null;
+  let chartInstance: ChartType | null = null;
 
   function createChart(chartData: { year: number; popularity: number }[]) {
+    if (!Chart) {
+      return;
+    }
     if (chartInstance) {
       chartInstance.destroy();
     }
@@ -145,7 +159,10 @@
 <svelte:head>
   <title>Trend Analysis {data.query ? `- ${data.query}` : ""}</title>
   {#if data.query}
-    <meta name="description" content="Trend analysis for {data.query} in the Felixplore archive." />
+    <meta
+      name="description"
+      content={`Trend analysis for ${data.query} in the Felixplore archive.`}
+    />
   {/if}
 </svelte:head>
 

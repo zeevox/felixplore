@@ -2,6 +2,7 @@
 import db from "$lib/server/db";
 import { getQueryEmbedding, SIMILARITY_THRESHOLD } from "$lib/server/embed";
 import { isRedirect, redirect, error as SvelteKitError } from "@sveltejs/kit";
+import pgvector from "pgvector/pg";
 import type { Actions, PageServerLoad } from "./$types";
 
 type TrendRow = { year: string; normalized_prevalence: string };
@@ -64,10 +65,8 @@ export const load: PageServerLoad<TrendsPageData> = ({ url }) => {
                 ORDER BY ay.year ASC;
             `;
 
-      const result = await db.query<TrendRow>(sqlQuery, [
-        JSON.stringify(queryEmbedding),
-        SIMILARITY_THRESHOLD,
-      ]);
+      const vectorSql = pgvector.toSql(queryEmbedding);
+      const result = await db.query<TrendRow>(sqlQuery, [vectorSql, SIMILARITY_THRESHOLD]);
 
       return result.rows.map((row) => ({
         year: parseInt(row.year, 10),

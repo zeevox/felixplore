@@ -4,6 +4,7 @@ import { error as SvelteKitError } from "@sveltejs/kit";
 
 import db from "$lib/server/db";
 import { getQueryEmbedding, SIMILARITY_THRESHOLD } from "$lib/server/embed";
+import pgvector from "pgvector/pg";
 
 export enum SortOrder {
   KeywordSearch = "keyword",
@@ -81,8 +82,7 @@ export async function searchArticles({
         `Semantic search component of Hybrid RRF for "${searchQuery}" is temporarily unavailable or failed to process. Please try a different search term or consider a different sort order.`,
       );
     }
-    const vectorString = `[${embeddingVector.join(",")}]`;
-    finalDbQueryArgs.push(vectorString); // For vector search
+    finalDbQueryArgs.push(pgvector.toSql(embeddingVector));
     const embeddingVectorParamIdx = pCurrent++;
 
     finalDbQueryArgs.push(SIMILARITY_THRESHOLD); // Add threshold value
@@ -169,8 +169,7 @@ export async function searchArticles({
         `Semantic search for "${searchQuery}" is temporarily unavailable or failed to process. Please try a different search term or sort order.`,
       );
     }
-    const vectorString = `[${embeddingVector.join(",")}]`;
-    finalDbQueryArgs.push(vectorString);
+    finalDbQueryArgs.push(pgvector.toSql(embeddingVector));
     const embeddingVectorParamIdx = pCurrent++;
 
     finalDbQueryArgs.push(SIMILARITY_THRESHOLD); // Add threshold value
