@@ -222,7 +222,7 @@
   </header>
 
   <main
-    class="lg:card lg:preset-filled-surface-50-950 container mx-auto my-6 max-w-7xl flex-grow space-y-8 space-x-4 self-center p-4 md:p-8 lg:m-10 lg:p-10 lg:shadow-sm"
+    class="lg:card lg:preset-tonal-surface container mx-auto my-6 max-w-7xl flex-grow space-y-8 space-x-4 self-center p-4 md:p-8 lg:m-10 lg:p-10 lg:shadow-sm"
   >
     {#if data.query && !data.error}
       <h1 class="h1 mb-2 text-2xl md:text-3xl">

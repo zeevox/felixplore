@@ -2,17 +2,22 @@
 <script lang="ts">
   import ArticleCard from "$lib/components/ArticleCard.svelte";
   import ArticleDisplay from "$lib/components/ArticleDisplay.svelte";
+  import Search from "@lucide/svelte/icons/search";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
 </script>
 
 <div class="container mx-auto p-4 md:p-8">
-  <header class="text-left">
-    <a href="/">
-      <h3 class="h3 py-4">Felixplore</h3>
+  <header
+    class="border-b-surface-contrast-100-900/75 my-4 mb-8 flex flex-row items-center justify-between border-b pb-2"
+  >
+    <a href="/" class="hover:text-primary-500 self-center text-2xl font-semibold transition-colors">
+      Felixplore
     </a>
-    <hr class="mb-8 opacity-20" />
+    <a href="/search">
+      <Search size={24} class="mr-2" />
+    </a>
   </header>
   <div class="flex flex-col gap-16 lg:flex-row">
     <main class="lg:w-2/3">

@@ -7,7 +7,7 @@
 </script>
 
 <div
-  class="container mx-auto flex min-h-dvh flex-col items-center justify-center p-4 text-center transition-colors duration-500 ease-in-out"
+  class="container mx-auto my-8 flex min-h-dvh flex-col items-center justify-start p-4 text-center transition-colors duration-500 ease-in-out sm:my-0 sm:justify-center"
 >
   <header class="mb-10">
     <a href="/" class="group">
@@ -15,7 +15,7 @@
         class="text-secondary-500 dark:text-secondary-50
 				p-4
 				 text-5xl font-extrabold tracking-tight transition-opacity
-				duration-300 group-hover:opacity-80 md:text-7xl"
+				duration-300 group-hover:opacity-80 sm:text-7xl"
       >
         Felixplore
       </h1>
@@ -27,12 +27,12 @@
       <label class="label w-full">
         <span class="sr-only">Search the archive</span>
         <div
-          class="input-group focus-within:ring-primary-500/70 transform
-                           grid-cols-[1fr_auto] rounded-full bg-white/70
-                           p-2 shadow-md backdrop-blur-lg
-                           transition-all duration-300
-                           ease-out focus-within:scale-[1.02] focus-within:ring-2
-                           hover:scale-[1.02] hover:shadow-2xl dark:bg-black/50"
+          class="input-group focus-within:ring-primary-500/70 mx-2
+                           transform grid-cols-[1fr_auto] rounded-full
+                           bg-white/70 p-2 shadow-md
+                           backdrop-blur-lg transition-all
+                           duration-300 ease-out focus-within:scale-[1.02]
+                           focus-within:ring-2 hover:scale-[1.02] hover:shadow-2xl dark:bg-black/50"
         >
           <input
             type="search"
@@ -63,7 +63,7 @@
     <div class="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
       <a
         href="/random"
-        class="btn preset-outlined-secondary-800-200
+        class="btn preset-outlined-secondary-800-200 bg-surface-50-950
 	                       hover:shadow-secondary-500/30 w-auto
 	                       transform rounded-full
 	                       border-2 py-3
@@ -73,11 +73,11 @@
         aria-label="Find a random article"
       >
         <Dices class="mr-2 inline-block" size={20} />
-        I'm Feeling Lucky
+        I'm feeling lucky
       </a>
       <a
         href="/trends"
-        class="btn preset-outlined-secondary-800-200
+        class="btn preset-outlined-secondary-800-200 bg-surface-50-950
 	                       hover:shadow-secondary-500/30 w-auto
 	                       transform rounded-full
 	                       border-2 py-3

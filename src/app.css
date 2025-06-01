@@ -41,7 +41,8 @@ body {
 }
 
 body::before {
-  /* background-image: url("/noise.svg"); */
+  background-image: url("/noise.svg");
+  filter: opacity(20%);
   background-size: 25rem;
   background-repeat: repeat;
   top: 0;

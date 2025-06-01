@@ -12,12 +12,15 @@
   }
 </script>
 
-<article class="lg:card lg:preset-filled-surface-50-950 space-y-6 lg:p-10 lg:shadow-sm">
+<article
+  class="lg:card lg:preset-filled-surface-50-950 lg:dark:preset-filled-surface-100-900 space-y-6 lg:p-10 lg:shadow-sm"
+>
   <header class="flex flex-col space-y-4 sm:flex-row sm:items-start sm:justify-between">
     <div class="flex-1 space-y-4">
       {#if article.category}
         <div>
-          <span class="h6 text-primary-500 uppercase">{article.category}</span>
+          <span class="h6 text-primary-500 dark:text-primary-400 uppercase">{article.category}</span
+          >
         </div>
       {/if}
 
