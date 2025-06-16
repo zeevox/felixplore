@@ -1,18 +1,8 @@
-# sv
+# Felixplore
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+**A new tool to explore the _Felix_ newspaper archive**
 
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
+Also check out [`tupsar`](https://github.com/zeevox/tupsar), the tool used to digitise the newspaper archive in the first place.
 
 ## Developing
 
@@ -35,17 +25,13 @@ ssh -L 5173:localhost:5173 user@your-server
 
 Replace `user@your-server` with your actual SSH username and server address.
 
-## Building
+## Deployment
 
-To create a production version of your app:
+To deploy a production version of the app:
 
 ```bash
-npm run build
+docker compose up --build --pull always --detach
 ```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
 
 ## Pre-commit Hooks
 
